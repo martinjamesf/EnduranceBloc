@@ -1,0 +1,16 @@
+[
+  {
+    "id": "w1",
+    "title": "Morning Swim",
+    "type": "swim",
+    "start": "2025-12-28T06:00:00.000Z",
+    "notes": "Technique focus"
+  },
+  {
+    "id": "w2",
+    "title": "Evening Bike",
+    "type": "bike",
+    "start": "2025-12-28T17:30:00.000Z",
+    "notes": "Threshold intervals"
+  }
+]

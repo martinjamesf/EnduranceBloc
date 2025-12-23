@@ -1,19 +1,45 @@
-# EnduranceBloc
+# EnduranceGrid
 
-EnduranceBloc is a smart calendar for endurance athletes that syncs TrainingPeaks and Outlook and uses AI to suggest optimal workout times.
+EnduranceGrid is a smart weekly planning app for endurance athletes. It syncs TrainingPeaks and Outlook calendars, supports a structured Sunday Prep ritual, and uses AI to suggest optimal workout times based on past performance, recovery patterns, and life constraints.
 
-## Quick start
+## 🚀 Tech Stack
+- Next.js (App Router, TypeScript)
+- Supabase (Auth, Database, Realtime)
+- Tailwind CSS + CSS Variables (Design Tokens)
+- TrainingPeaks API (Workout import)
+- Microsoft Graph API (Outlook sync)
+- AI Layer (Custom logic + future LLM integration)
 
-1. Install dependencies: `npm install`
-2. Create a Supabase project and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`
-3. Run locally: `npm run dev`
+## 🎨 Design System
+- Primary Color: `#0D1D35`
+- Accent Colors: Orange `#FF7A00`, Teal `#00C2A8`
+- Sport Colors: Swim `#0077FF`, Bike `#F2C94C`, Run `#EB5757`
+- Light + Dark theme support
+- Component library aligned with Figma
 
-## Goals
+## 📁 Project Structure
+See `/components`, `/app`, `/lib`, `/styles`, and `/supabase/schema.sql`.
 
-- Weekly Grid View and Sunday Prep ritual
-- Calendar sync with TrainingPeaks and Outlook
-- AI suggestions for optimal workout times
+## 🧪 Core Features
+- Weekly grid with drag‑and‑drop
+- Sunday Prep Mode (5‑step flow)
+- TrainingPeaks sync
+- Outlook sync
+- AI workout time suggestions
+- Time‑block editor (family, work, sleep, custom)
+- Light + dark themes
+- Mobile‑optimized layout
 
-## Notes
-- Supabase migrations are in `supabase/migrations`.
-- Mock data is in `data/mock`.
+## 🛠 Setup
+1. Clone repo  
+2. Install dependencies  
+3. Create `.env.local` with Supabase + API keys  
+4. Run `npm run dev`  
+5. Import Supabase schema  
+6. Start building
+
+## 📅 Roadmap
+See GitHub Projects board for full breakdown.
+
+## 🏅 License
+MIT

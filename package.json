@@ -6,13 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx --fix",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write .",
     "supabase:migrate": "supabase db push",
-    "supabase:start": "supabase start"
+    "supabase:start": "supabase start",
+    "import:schema": "psql \"$DATABASE_URL\" -f ./supabase/schema.sql || echo 'Install psql or run schema via Supabase SQL editor'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
+    "@tailwindcss/postcss": "^4.1.18",
     "next": "^16.1.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
@@ -21,6 +24,8 @@
     "@types/node": "25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
     "autoprefixer": "^10.4.23",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.0",

@@ -13,7 +13,7 @@ create table if not exists workouts (
   title text,
   type text,
   start timestamptz,
-  end timestamptz,
+  "end" timestamptz,
   notes text,
   source text,
   profile_id uuid references profiles(id),
@@ -24,7 +24,7 @@ create table if not exists blocks (
   id uuid primary key default gen_random_uuid(),
   title text,
   start timestamptz,
-  end timestamptz,
+  "end" timestamptz,
   workouts jsonb,
   profile_id uuid references profiles(id),
   created_at timestamptz default now()

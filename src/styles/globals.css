@@ -16,9 +16,9 @@ html, body, #__next {
 }
 
 body {
-  @apply bg-white text-slate-900;
+  
 }
 
 .dark body {
-  @apply bg-slate-900 text-slate-100;
+  
 }

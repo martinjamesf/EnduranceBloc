@@ -33,9 +33,9 @@ See `/components`, `/app`, `/lib`, `/styles`, and `/supabase/schema.sql`.
 ## 🛠 Setup
 1. Clone repo  
 2. Install dependencies  
-3. Create `.env.local` with Supabase + API keys (see `SUPABASE_SETUP.md`)
+3. Create `.env.local` with Supabase + API keys (see `.github/docs/SUPABASE_SETUP.md`)
 4. Run `npm run dev`  
-5. Import Supabase schema (see `SUPABASE_SETUP.md`)  
+5. Import Supabase schema (see `.github/docs/SUPABASE_SETUP.md`)  
 6. Start building
 
 ## 📅 Roadmap

@@ -7,12 +7,12 @@ This document explains the placeholder endpoints and how to wire real integratio
 - **TrainingPeaks**
   - GET /api/trainingpeaks/connect → Redirects to TrainingPeaks OAuth authorize page
   - GET /api/trainingpeaks/callback → OAuth callback, exchanges code for token (placeholder)
-  - POST /api/trainingpeaks/sync → Trigger a sync; expects JSON { accessToken }
+  - POST /api/trainingpeaks/sync → Authenticated; triggers a sync using server-stored OAuth tokens for the current user
 
 - **Outlook (Microsoft Graph)**
   - GET /api/outlook/connect → Redirects to Outlook/Microsoft authorize page
   - GET /api/outlook/callback → OAuth callback for Outlook (placeholder)
-  - POST /api/outlook/sync → Trigger a sync; expects JSON { accessToken }
+  - POST /api/outlook/sync → Authenticated; triggers a sync using server-stored OAuth tokens for the current user
 
 ## Next steps to make these production ready
 

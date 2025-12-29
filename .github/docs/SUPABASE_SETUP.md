@@ -5,7 +5,7 @@ This document walks through creating a new Supabase project and connecting it to
 ## 1) Create a new Supabase project
 
 1. Install the Supabase CLI (optional but recommended):
-   - macOS / Linux: use Homebrew (example): `brew install supabase/tap/supabase` — or follow the official guide: https://github.com/supabase/cli#install-the-cli
+   - macOS / Linux: use Homebrew (example): `brew install supabase/tap/supabase` — or follow the official guide: https://supabase.com/docs/guides/cli
    - Windows: avoid installing the CLI globally with npm (e.g., `npm i -g supabase`) — global npm installs are no longer supported and can fail with postinstall errors. Recommended options:
      - Use Winget (if available): run `winget search supabase` then `winget install <PackageId>`
      - Use Scoop (if you have it): `scoop install supabase`
@@ -75,5 +75,3 @@ The script will print whether the connection succeeded or return an error explai
 - **Vercel / Netlify**: create environment variables in the project settings (do NOT commit `.env.local` with real keys).
 
 If you'd like, I can add a sample GitHub Actions snippet to this repo to show how to run migrations and deploy safely.
-
----

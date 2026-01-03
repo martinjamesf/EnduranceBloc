@@ -46,12 +46,15 @@ EnduranceBloc is a Next.js-based smart weekly planning app for endurance athlete
 - Example (Button.tsx): `<button className="px-4 py-2 rounded bg-cadenceOrange text-white">` — keep className props flexible
 
 ### Key Pages
-- **`/`** (page.tsx): home/dashboard view
-- **`/login`** (login/page.tsx): auth entry point
-- **`/weekly`** (weekly/page.tsx): main calendar grid with workouts and blocks
+- **`/`** (page.tsx): home/dashboard entry
+- **`/login`** (login/page.tsx) and **`/signup`** (signup/page.tsx): auth entry points (signin also available at `/signin`)
+- **`/forgot-password`** (forgot-password/page.tsx): reset flow
+- **`/week`** (week/page.tsx): primary weekly calendar grid with workouts + life blocks
+- **`/day`** (day/page.tsx): 24-hour timeline view
 - **`/sunday-prep`** (sunday-prep/page.tsx): 5-step weekly planning ritual
 - **`/block-editor`** (block-editor/page.tsx): drag-and-drop grid editor
-- **`/settings`** (settings/page.tsx): user preferences, integration management
+- **`/workout/[id]`** (workout/[id]/page.tsx): workout detail/deep link
+- **`/settings`** (settings/page.tsx): user preferences + integration management
 
 ## Developer Workflows
 
@@ -125,6 +128,7 @@ When creating or updating Markdown/instruction files:
 - Place new workflow/setup docs in `.github/docs/` (e.g., `.github/docs/DEPLOYMENT.md`, `.github/docs/TESTING.md`)
 - Keep `README.md` and `CONTRIBUTING.md` at root (GitHub's auto-discovery conventions)
 - Update references in other docs to point to `.github/docs/` location
+- Competitive/product analysis lives in `.github/docs/COMPETITOR_ANALYSIS_STRATEGY.md` (keep updated as positioning evolves)
 - Update this file (`.github/copilot-instructions.md`) if adding new architectural concepts or patterns
 
 ## PR Checklist

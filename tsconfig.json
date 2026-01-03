@@ -17,7 +17,9 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": "./",
-    "paths": {},
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "incremental": true,
     "esModuleInterop": true,
     "plugins": [

@@ -1,11 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --color-primary-navy: #0D1D35;
-  --color-cadence-orange: #FF7A00;
-  --color-aero-teal: #00C2A8;
+@theme {
+  --color-primaryNavy: #0D1D35;
+  --color-cadenceOrange: #FF7A00;
+  --color-aeroTeal: #00C2A8;
   --color-swim: #0077FF;
   --color-bike: #F2C94C;
   --color-run: #EB5757;
@@ -16,9 +14,11 @@ html, body, #__next {
 }
 
 body {
-  
+  background-color: #ffffff;
+  color: #0f172a; /* slate-900 */
 }
 
 .dark body {
-  
+  background-color: #0f172a; /* slate-900 */
+  color: #f8fafc; /* slate-50 */
 }

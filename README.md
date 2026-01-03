@@ -1,4 +1,4 @@
-# EnduranceGrid
+swa# EnduranceGrid
 
 EnduranceGrid is a smart weekly planning app for endurance athletes. It syncs TrainingPeaks and Outlook calendars, supports a structured Sunday Prep ritual, and uses AI to suggest optimal workout times based on past performance, recovery patterns, and life constraints.
 

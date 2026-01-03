@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -10,10 +10,9 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { ViewSelector, PageHeader } from '@/components'
+import { PageHeader } from '@/components'
 import { EventModal } from '@/components/Modals/EventModal'
-import { DraggableEvent } from '@/components/Calendar/DraggableEvent'
-import { DroppableTimeSlot } from '@/components/Calendar/DroppableTimeSlot'
+import { TimeSlot } from '@/components/Calendar/TimeSlot'
 import {
   fetchCalendarEvents,
   createCalendarEvent,
@@ -23,28 +22,289 @@ import {
 } from '@/lib/services/calendarService'
 import { supabase } from '@/lib/supabaseClient'
 
-// Event type colors
-function getEventColor(event: CalendarEvent): { bg: string; border: string; text: string } {
-  if (event.type === 'workout') {
-    switch (event.workoutType) {
-      case 'swim':
-        return { bg: '#cce5ff', border: '#0077FF', text: '#004799' }
-      case 'bike':
-        return { bg: '#fff4e0', border: '#F2C94C', text: '#684d08' }
-      case 'run':
-        return { bg: '#ffcccc', border: '#EB5757', text: '#be1a1a' }
-      default:
-        return { bg: '#d4f4f0', border: '#55d28f', text: '#3ba86e' }
-    }
-  } else if (event.type === 'google') {
-    return { bg: '#e8eeff', border: '#3849e0', text: '#2937b5' }
-  }
-  return { bg: '#bdffdb', border: '#8fdcb2', text: '#2c5a41' }
-}
-
-interface WeekendDay {
+interface Day {
   date: Date
   events: CalendarEvent[]
+}
+
+interface TimeSlotType {
+  hour: number
+  minute: number
+  isSleepTime: boolean
+}
+
+export default function WeekendPage() {
+  const [weekend, setWeekend] = useState<Day[]>([])
+  const [loading, setLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [selectedHour, setSelectedHour] = useState(0)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [currentDate, setCurrentDate] = useState(new Date())
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor)
+  )
+
+  // Get Saturday and Sunday of current week
+  useEffect(() => {
+    const date = new Date(currentDate)
+    const day = date.getDay()
+    
+    // Calculate Saturday
+    const diff = date.getDate() - day + (day === 0 ? -1 : 6)
+    const saturday = new Date(date.setDate(diff))
+    saturday.setHours(0, 0, 0, 0)
+    
+    // Calculate Sunday
+    const sunday = new Date(saturday)
+    sunday.setDate(sunday.getDate() + 1)
+
+    const loadEvents = async () => {
+      setLoading(true)
+      const saturdayStr = saturday.toISOString().split('T')[0]
+      const sundayStr = sunday.toISOString().split('T')[0]
+
+      const [saturdayEvents, sundayEvents] = await Promise.all([
+        fetchCalendarEvents(saturdayStr, saturdayStr),
+        fetchCalendarEvents(sundayStr, sundayStr),
+      ])
+
+      setWeekend([
+        { date: saturday, events: saturdayEvents },
+        { date: sunday, events: sundayEvents },
+      ])
+      setLoading(false)
+    }
+
+    loadEvents()
+  }, [currentDate])
+
+  const SLEEP_START = 22
+  const SLEEP_END = 5
+
+  const timeSlots: TimeSlotType[] = [
+    ...Array.from({ length: SLEEP_END }, (_, i) => ({ hour: i, minute: 0, isSleepTime: true })),
+    ...Array.from({ length: 17 }, (_, i) => {
+      const hour = i + 5
+      return { hour, minute: 0, isSleepTime: false }
+    }),
+    ...Array.from({ length: 17 * 3 }, (_, i) => {
+      const baseHour = 5
+      const totalMinutes = i * 20
+      const hour = baseHour + Math.floor(totalMinutes / 60)
+      const minute = totalMinutes % 60
+      return { hour, minute, isSleepTime: false }
+    }).filter((slot, idx, arr) => idx === 0 || slot.hour !== arr[idx - 1].hour || slot.minute !== arr[idx - 1].minute),
+    ...Array.from({ length: 24 - SLEEP_START }, (_, i) => ({ hour: SLEEP_START + i, minute: 0, isSleepTime: true })),
+  ]
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over) return
+
+    const overId = over.id as string
+    const draggedEvent = weekend.flatMap((d) => d.events).find((e) => e.id === active.id)
+
+    if (!draggedEvent) return
+
+    const dateMatch = overId.match(/(\d{4}-\d{2}-\d{2})-(\d{1,2})-(\d{2})/)
+    if (!dateMatch) return
+
+    const [, dateStr, hourStr, minuteStr] = dateMatch
+    const newDate = new Date(`${dateStr}T${hourStr.padStart(2, '0')}:${minuteStr}:00`)
+
+    updateCalendarEvent(draggedEvent.id, {
+      start: newDate.toISOString(),
+      end: new Date(newDate.getTime() + 60 * 60 * 1000).toISOString(),
+    }, draggedEvent.type)
+  }
+
+  const handleAddEvent = (dateStr: string, hour: number) => {
+    setSelectedDate(dateStr)
+    setSelectedHour(hour)
+    setSelectedEvent(null)
+    setModalOpen(true)
+  }
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event)
+    setModalOpen(true)
+  }
+
+  const handleSaveEvent = async (eventData: Partial<CalendarEvent>) => {
+    const user = await supabase.auth.getUser()
+    if (!user.data.user) {
+      alert('You must be logged in to create events')
+      return
+    }
+
+    if (selectedEvent) {
+      await updateCalendarEvent(selectedEvent.id, eventData, selectedEvent.type)
+      setWeekend((prev) =>
+        prev.map((day) => ({
+          ...day,
+          events: day.events.map((e) =>
+            e.id === selectedEvent.id ? { ...e, ...eventData } : e
+          ),
+        }))
+      )
+    } else {
+      const newEvent = await createCalendarEvent(
+        {
+          ...eventData,
+          start: new Date(`${selectedDate}T${selectedHour.toString().padStart(2, '0')}:00:00`).toISOString(),
+          end: new Date(`${selectedDate}T${(selectedHour + 1).toString().padStart(2, '0')}:00:00`).toISOString(),
+        } as Omit<CalendarEvent, 'id'>,
+        user.data.user.id
+      )
+
+      if (newEvent) {
+        setWeekend((prev) => {
+          const updated = [...prev]
+          const dateIndex = updated.findIndex((d) => d.date.toISOString().split('T')[0] === selectedDate)
+          if (dateIndex !== -1) {
+            updated[dateIndex].events.push(newEvent)
+          }
+          return updated
+        })
+      }
+    }
+    setModalOpen(false)
+  }
+
+  const handleDeleteEvent = async (eventId: string) => {
+    const event = weekend.flatMap((d) => d.events).find((e) => e.id === eventId)
+    if (!event) return
+
+    await deleteCalendarEvent(eventId, event.type)
+    setWeekend((prev) =>
+      prev.map((day) => ({
+        ...day,
+        events: day.events.filter((e) => e.id !== eventId),
+      }))
+    )
+    setModalOpen(false)
+  }
+
+  const goToToday = () => {
+    setCurrentDate(new Date())
+  }
+
+  const previousWeekend = () => {
+    const newDate = new Date(currentDate)
+    newDate.setDate(newDate.getDate() - 7)
+    setCurrentDate(newDate)
+  }
+
+  const nextWeekend = () => {
+    const newDate = new Date(currentDate)
+    newDate.setDate(newDate.getDate() + 7)
+    setCurrentDate(newDate)
+  }
+
+  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' })
+  const year = currentDate.getFullYear()
+  const weekStart = weekend[0]?.date || new Date()
+  const weekEnd = weekend[1]?.date || new Date()
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <div className="flex flex-col h-full bg-white">
+        {/* Header */}
+        <PageHeader
+          dateDisplay={`${monthName} ${weekStart.getDate()}-${weekEnd.getDate()} ${year}`}
+          onTodayClick={goToToday}
+          onPreviousClick={previousWeekend}
+          onNextClick={nextWeekend}
+          onAddEvent={() => handleAddEvent(new Date().toISOString().split('T')[0], 9)}
+        />
+
+        {/* Day headers */}
+        <div className="border-b border-[#dadce0] overflow-x-auto">
+          <div className="flex min-w-[520px]">
+            <div className="w-12 md:w-16 flex-shrink-0" />
+            {weekend.map(day => (
+              <div
+                key={day.date.toISOString()}
+                className="min-w-[140px] md:min-w-0 flex-1 flex items-center justify-center py-2 px-3"
+              >
+                <div className="text-xs md:text-sm font-medium text-[#333]">
+                  {day.date.toLocaleDateString('en-US', { weekday: 'short' })} {day.date.getDate()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Calendar grid */}
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-gray-500">Loading events...</div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-auto">
+            <div className="flex min-w-[520px]">
+              {/* Time labels */}
+              <div className="w-12 md:w-16 flex-shrink-0 border-r border-[#dadce0] py-2">
+                {timeSlots.map((slot, index) => {
+                  const slotHeight = slot.isSleepTime ? 'h-3 md:h-4' : 'h-4 md:h-5'
+                  return (
+                    <div
+                      key={`${slot.hour}-${slot.minute}`}
+                      className={`${slotHeight} flex items-start justify-center px-1 md:px-2`}
+                    >
+                      {slot.minute === 0 && (
+                        <span className="text-[11px] md:text-xs font-medium text-[#333]">
+                          {slot.hour.toString().padStart(2, '0')}:00
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Days grid */}
+              <div className="flex flex-1">
+                {weekend.map(day => (
+                  <div
+                    key={day.date.toISOString()}
+                    className="min-w-[140px] md:min-w-0 flex-1 flex flex-col border-r border-[#dadce0] last:border-r-0"
+                  >
+                    {timeSlots.map(slot => (
+                      <TimeSlot
+                        key={`${day.date.toISOString()}-${slot.hour}-${slot.minute}`}
+                        hour={slot.hour}
+                        minute={slot.minute}
+                        isSleepTime={slot.isSleepTime}
+                        day={day}
+                        onAddEvent={handleAddEvent}
+                        onEventClick={handleEventClick}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <EventModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false)
+            setSelectedEvent(null)
+          }}
+          onSave={handleSaveEvent}
+          initialDate={selectedDate}
+          initialHour={selectedHour}
+          editEvent={selectedEvent && (selectedEvent.type === 'workout' || selectedEvent.type === 'block') ? (selectedEvent as any) : undefined}
+          onDelete={handleDeleteEvent}
+        />
+      </div>
+    </DndContext>
+  )
 }
 
 export default function WeekendPage() {

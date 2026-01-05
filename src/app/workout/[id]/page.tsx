@@ -1,5 +1,3 @@
-import { useRouter } from 'next/router'
-
 export default function WorkoutDetail() {
   return (
     <section className="p-6">

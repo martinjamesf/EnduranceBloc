@@ -1,3 +1,3 @@
-export default function Icon({ name }: { name: string }) {
-  return <svg className="w-4 h-4" aria-hidden>{/* placeholder for {name} */}</svg>
+export default function Icon() {
+  return <svg className="w-4 h-4" aria-hidden>{/* placeholder icon */}</svg>
 }

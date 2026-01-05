@@ -3,16 +3,19 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import Sidebar from '../Sidebar/Sidebar'
 
 export default function Navigation() {
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
-  // Close sidebar when route changes
   useEffect(() => {
-    setSidebarOpen(false)
-  }, [pathname])
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Icon SVG for calendar
   const calendarIcon = (
@@ -38,68 +41,26 @@ export default function Navigation() {
   const isActive = (path: string) => pathname === path
 
   return (
-    <>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <nav className="border-b border-[#dbe8fe] bg-white dark:bg-slate-900">
-        <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 gap-4">
-          {/* Left section: Hamburger + Logo */}
-          <div className="flex items-center gap-3 md:gap-4 flex-1">
-            {/* Hamburger button */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors flex-shrink-0 text-[#0D1D35] dark:text-slate-100"
-              aria-label="Toggle sidebar"
-              aria-expanded={sidebarOpen}
-              title="Toggle navigation menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            {/* Logo - Desktop only */}
-            <Link href="/" className="hover:opacity-80 transition-opacity hidden md:block">
-              <div className="text-lg md:text-xl font-semibold text-[#0D1D35] dark:text-white cursor-pointer whitespace-nowrap">
-                EnduranceBloc
-              </div>
-            </Link>
-
-            {/* Mobile logo */}
-            <Link href="/" className="md:hidden hover:opacity-80 transition-opacity">
-              {logoIcon}
-            </Link>
-          </div>
-
-          {/* Navigation items */}
-          <div className="flex gap-6 md:gap-8 items-center">
-            {/* Plan link */}
-            <Link
-              href="/week"
-              className={`flex flex-col gap-1 md:gap-2 items-center justify-center px-2 md:px-3 py-2 rounded-md transition-colors ${
-                isActive('/week')
-                  ? 'text-[#0C41FF] font-medium'
-                  : 'text-[#0D1D35] dark:text-slate-300 hover:text-[#0C41FF]'
-              }`}
-            >
-              {calendarIcon}
-              <span className="text-xs md:text-sm font-medium">Plan</span>
-            </Link>
-
-            {/* Settings link */}
-            <Link
-              href="/settings"
-              className={`flex flex-col gap-1 md:gap-2 items-center justify-center px-2 md:px-3 py-2 rounded-md transition-colors ${
-                isActive('/settings')
-                  ? 'text-[#0C41FF] font-medium'
-                  : 'text-[#3B76F6] dark:text-slate-300 hover:text-[#0C41FF]'
-              }`}
-            >
-              {settingsIcon}
-              <span className="text-xs md:text-sm font-medium">Settings</span>
-            </Link>
-          </div>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'border-b border-white/10 bg-slate-950/80 backdrop-blur' 
+        : 'border-b border-transparent bg-transparent'
+    }`}>
+      <div className="flex items-center justify-between px-4 py-3 gap-3 text-sm font-semibold">
+        {/* Left section: Logo */}
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-semibold text-white">EnduranceBloc</span>
+          <span className="hidden text-xs uppercase tracking-[0.25em] text-white/60 md:inline">Plan smarter every week</span>
         </div>
-      </nav>
-    </>
+
+        {/* Navigation items */}
+        <div className="flex items-center gap-3">
+          <Link href="/week" className="hidden px-3 py-2 text-white/80 hover:text-white md:inline-flex">Product</Link>
+          <Link href="/sunday-prep" className="hidden px-3 py-2 text-white/80 hover:text-white md:inline-flex">Sunday Prep</Link>
+          <Link href="/login" className="px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">Log in</Link>
+          <Link href="/signup" className="px-4 py-2 rounded-lg bg-[#FF7A00] text-white hover:opacity-90 transition">Start free</Link>
+        </div>
+      </div>
+    </nav>
   )
 }

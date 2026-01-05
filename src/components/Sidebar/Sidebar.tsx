@@ -6,10 +6,14 @@ import { usePathname } from 'next/navigation'
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
+  /** Optional top offset classes to place the sidebar below the main nav */
+  offsetTopClass?: string
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose, offsetTopClass }: SidebarProps) {
   const pathname = usePathname()
+  const topClass = offsetTopClass ?? 'top-0'
+  const heightClass = offsetTopClass ? 'bottom-0' : 'h-full'
   
   // Get current date
   const today = new Date()
@@ -75,7 +79,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Overlay backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className={`fixed inset-0 bg-black/50 z-40 md:hidden ${offsetTopClass ?? ''}`.trim()}
           onClick={onClose}
           aria-hidden="true"
         />
@@ -83,7 +87,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 md:w-72 bg-white border-r border-[#dadce0] overflow-y-auto transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed left-0 w-64 md:w-72 bg-white border-r border-[#dadce0] overflow-y-auto transition-transform duration-300 ease-in-out z-50 ${topClass} ${heightClass} ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="navigation"

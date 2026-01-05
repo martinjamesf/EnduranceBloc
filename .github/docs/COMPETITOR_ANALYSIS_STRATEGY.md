@@ -22,6 +22,151 @@ This document analyzes **Akiflow as a primary competitor** and outlines Enduranc
 
 ---
 
+## Part 0.5: Recent Feature Velocity Analysis (Jan 2026)
+
+### TrainingPeaks Changelog Insights (Aug 2024 - Aug 2025)
+
+**Key Observation:** TrainingPeaks is investing heavily in **strength training** and **mobile experience**, but **NOT in calendar integration or life-context features**—validating our strategic wedge.
+
+#### What They're Shipping (High Velocity)
+
+| Feature Category | Recent Updates | Strategic Implication for EB |
+|---|---|---|
+| **Strength Training** | New strength builder (circuits, structured workouts, video support, exercise history) across web + mobile | ⚠️ They're expanding beyond cycling/running. We should support strength workouts in our calendar too. |
+| **Private Notes** | Secure notes feature for athletes (Aug 2025) | ✅ Good—keeps training diary in TP; doesn't compete with our life integration. |
+| **Beta Analyze View** | Advanced workout file analysis (power, pace, laps, zones, smoothing) | ✅ Good—deepens analytics moat; we link to TP for this, don't compete. |
+| **TrainingPeaks Payments** | Coach payment processing (subscriptions, checkout, Stripe integration) | ⚠️ Coach monetization focus—makes TP stickier for coaches. We need strong coach value prop. |
+| **Sport Subtypes** | More granular workout categorization (June 2025) | 📝 Nice-to-have: We should support subtypes when importing from TP. |
+| **Health Metrics** | Quick-entry health metrics, insights, Garmin Women's Health integration | ✅ They're adding recovery data but not *using* it for planning. Our opportunity intact. |
+| **Mobile Modernization** | UI updates, performance improvements, Apple Watch structured workouts | ⚠️ Mobile UX improving—we need strong mobile parity day 1. |
+
+#### What They're NOT Shipping (Our Advantage)
+
+❌ **No calendar integration** (no Google Calendar, Outlook, life events)  
+❌ **No life-context visibility** (coach still can't see athlete's work schedule)  
+❌ **No intelligent rescheduling** (no AI suggestions based on conflicts)  
+❌ **No recovery-informed planning** (health metrics collected but not actionable)  
+❌ **No overtraining prevention AI** (alerts exist but not predictive/coachlike)  
+
+**Strategic Takeaway:** TrainingPeaks is doubling down on training analytics and coach monetization—NOT lifestyle integration. This confirms our wedge is viable for 18-24 months.
+
+---
+
+### Akiflow Changelog Insights (Aug 2024 - Dec 2025)
+
+**Key Observation:** Akiflow is laser-focused on **AI integration (Aki)**, **mobile/UX polish**, and **voice commands**—but has zero athletic domain features. They're the productivity reference, not a competitor.
+
+#### What They're Shipping (High Velocity)
+
+| Feature Category | Recent Updates | What We Can Emulate |
+|---|---|---|
+| **AI Assistant (Aki)** | Siri integration, email-to-task, smart tagging (Work/Personal), AI-powered planning | ✅ **Key Learning:** Voice commands + email-to-task = powerful capture. We should build: "Hey Siri, log my workout in EnduranceBloc" and "Email your Sunday Prep to aki@endurancebloc.com". |
+| **Live Activities** | iOS Lock Screen live activity for current task/event; Android sticky notification | ✅ **Emulate:** Live Activity showing "Next workout: 5K easy run in 45 min" on lock screen = powerful engagement. |
+| **Gmail Client Choice** | Choose which email client opens Gmail tasks (Gmail, Apple Mail, Superhuman) | ✅ **Pattern to copy:** Let users choose which app opens TP workouts (TP app, web, or stay in EB). |
+| **Task Colors by Project** | Automatic color-coding of tasks by project (now default for all users) | ✅ **Already doing this!** Our sport color-coding (blue swim, yellow bike, red run) is similar. Validates visual hierarchy. |
+| **iPad/Tablet Support** | Re-enabled iPad support (Sept 2025) after temporary removal | ⚠️ Lesson: Don't launch iPad until it's polished. Better to wait than ship broken experience. |
+| **Mobile UI Polish** | Consistent modals, sticky headers/footers, improved scrolling, performance | ✅ **Critical:** Mobile UX needs to be flawless. Akiflow's obsession with polish = table stakes. |
+| **Compact View** | Toggle to show more items in less space | ✅ **Nice-to-have:** Compact calendar view for athletes with 15+ weekly sessions. |
+| **Onboarding Overhaul** | New slides, in-app help, email flows, guide sections | ✅ **Must-do:** Invest in onboarding. Akiflow knows new users need hand-holding. |
+
+#### What Akiflow Lacks (Our Differentiation)
+
+❌ **No sports data** (TSS, CTL/ATL, zones, power, pace)  
+❌ **No recovery integration** (no Oura, Whoop, Apple Health, HRV)  
+❌ **No coach collaboration** (single-user productivity tool)  
+❌ **No athletic planning patterns** (race planning, taper, training phases)  
+❌ **No workout detail views** (distance, duration, intensity, RPE)  
+
+**Strategic Takeaway:** Akiflow's AI-first approach and UX polish are patterns we should emulate, but they'll never enter athletic domain. We're not competing; we're learning from their execution.
+
+---
+
+### Key Strategic Updates for EnduranceBloc (Based on Changelog Analysis)
+
+#### 1. **AI Voice Integration is Now Table Stakes**
+
+**What Changed:** Akiflow shipped Siri integration (Dec 2025). Athletes expect voice commands.
+
+**What We Do:**
+- **Phase 1 (MVP):** iOS Shortcuts support: "Add workout to EnduranceBloc"
+- **Phase 2 (Q2 2026):** Siri integration: "Hey Siri, log my 10K run with EnduranceBloc"
+- **Phase 3 (Q3 2026):** Voice-to-Aki Coach: "Hey Siri, ask EnduranceBloc if I should do intervals today"
+
+**Why It Matters:** Athletes train while driving, biking, running. Voice capture = lower friction than opening app.
+
+---
+
+#### 2. **Email-to-Task Pattern is Powerful (We Should Copy)**
+
+**What Akiflow Did:** Give each user a unique email address (aki@...) that creates tasks when emailed.
+
+**What We Build:**
+- **Email-to-Workout:** Each athlete gets `yourname@plan.endurancebloc.com`
+- **Use Cases:**
+  - Coach emails athlete's unique address → creates workout in athlete's calendar
+  - Athlete forwards race confirmation → creates race event + training phase
+  - Partner texts "Pick up kids 3pm" → creates life block in athlete's calendar
+
+**Why It Matters:** Reduces friction for coach-athlete communication. No app needed; just email.
+
+---
+
+#### 3. **Live Activity (iOS Lock Screen) is a Must-Have**
+
+**What Akiflow Did:** Show current task + next event on iOS Lock Screen and Android notification.
+
+**What We Build:**
+- **Lock Screen Widget:** "Next: 5K Tempo Run (Z3) in 1hr 15min"
+- **Notification:** "Starting soon: Swim intervals (8x100 @ Z4)"
+- **Completed:** "✅ Workout done! RPE: [Tap to rate]"
+
+**Why It Matters:** Athletes glance at lock screen constantly. Keep workout top-of-mind.
+
+---
+
+#### 4. **TrainingPeaks Mobile UX Improving (We Need Parity)**
+
+**What Changed:** TP shipped major mobile modernization (Feb-Aug 2025). Mobile experience no longer a weakness.
+
+**What We Do:**
+- **Don't launch mobile until it's polished.** Akiflow learned this (removed iPad, then re-added).
+- **Week view must be fast on mobile.** TP's mobile calendar is now smooth; ours needs to match.
+- **Touch interactions matter.** Drag-to-reschedule, swipe-to-complete, long-press menus.
+
+**Why It Matters:** Athletes expect mobile-first. If EB mobile is clunky, they'll stay in TP.
+
+---
+
+#### 5. **Strength Training is Now Multi-Sport Reality**
+
+**What Changed:** TP invested 6+ months in strength builder (circuits, videos, exercise history).
+
+**What We Do:**
+- **Phase 1 (MVP):** Support strength workouts in calendar (display, drag, reschedule)
+- **Phase 2 (Q2 2026):** Strength-specific time slots (gym blocks, recovery time)
+- **Phase 3 (Future):** Strength workout builder (if demand warrants; otherwise link to TP)
+
+**Why It Matters:** Triathletes + runners now do strength 2-3x/week. Ignoring strength = ignoring 20% of their training.
+
+---
+
+#### 6. **Coach Payments Feature = TP Stickiness Increasing**
+
+**What Changed:** TP launched TrainingPeaks Payments (coach subscription management, Stripe integration).
+
+**Impact:** Coaches now have financial incentive to stay in TP ecosystem (they get paid through TP).
+
+**What We Do:**
+- **Don't compete on payments.** Stripe integration is commoditized; not our wedge.
+- **Offer coach value in other ways:**
+  - Better athlete context visibility (work + life + recovery)
+  - Faster coach-athlete feedback loops (in-app comments, not email)
+  - AI Coach as co-pilot (suggest adjustments coach might miss)
+
+**Why It Matters:** We can't out-monetize TP. We win by making coaches more effective, not more profitable.
+
+---
+
 ## Part 1: TrainingPeaks as the Primary Competitive Threat
 
 ### What TrainingPeaks Does Exceptionally Well
@@ -543,6 +688,9 @@ Over time, the relationship will look like:
   - Create/edit workouts
   - Log RPE + notes
   - Notifications (workout reminders, AI suggestions)
+  - **iOS Live Activity** (lock screen: next workout countdown)
+  - **Voice Shortcuts** ("Add workout to EnduranceBloc")
+  - **Email-to-Workout** (unique email address per athlete)
   
 - [ ] **Strava Integration**
   - Pull completed activities
@@ -675,12 +823,15 @@ Over time, the relationship will look like:
 
 **Likelihood:** High (18-24 months). TP has resources and now sees the gap.
 
+**Updated Assessment (Jan 2026):** Based on TP's changelog (Aug 2024-Aug 2025), they are NOT investing in calendar integration. They're doubling down on strength training, mobile UX, coach payments, and analytics. **This gives us runway through Q2 2026 at minimum.** However, once they see our traction, expect fast-follow.
+
 **Mitigation:**
-1. **Move fast.** Ship MVP (calendar + AI Coach) within 8 weeks. Get athletes on the platform before TP copies.
+1. **Move fast.** Ship MVP (calendar + AI Coach) within 8 weeks. Get athletes on the platform before TP copies. **Update:** We're on track. Weekend page now matches Week structure.
 2. **Build community first.** Invest early in coach partnerships + athlete community. TP can copy features, but not community.
 3. **Own coach-athlete collaboration.** Our UX for shared planning will be best-in-class. TP will likely integrate coaching tools awkwardly.
 4. **Focus on the lifestyle angle.** TP will add calendar; we'll be the *lifestyle planning engine*. Emphasize balance, recovery, mental health, not just training.
 5. **Stay lean.** If TP attacks, we can pivot to "best-in-class lifestyle layer for TP users" rather than fighting on analytics.
+6. **Ship mobile fast.** TP's mobile UX is now polished (modernization complete Aug 2025). We can't have clunky mobile; it's now table stakes.
 
 **Fallback Position:** If TP copies our calendar, we become the *best UI layer for athletes using both TP + Outlook/Google Calendar*. Still valuable.
 
@@ -834,6 +985,53 @@ By 2027, when TP copies our calendar feature:
 
 ---
 
+## Part 10: Competitive Execution Playbook (Jan 2026)
+
+### Features We Should Steal (Akiflow Patterns)
+
+| Akiflow Feature | EB Adaptation | Priority | Timeline |
+|---|---|---|---|
+| **Siri Integration** | "Hey Siri, log workout in EnduranceBloc" | 🔴 HIGH | Q1 2026 (iOS Shortcuts MVP) |
+| **Email-to-Task** | Email to `you@plan.endurancebloc.com` creates workout/event | 🔴 HIGH | Q1 2026 |
+| **Live Activity** | Lock screen: "Next workout in 1hr" | 🟡 MEDIUM | Q2 2026 |
+| **Compact View Toggle** | Dense calendar for athletes with 15+ sessions/week | 🟢 LOW | Q3 2026 |
+| **Smart Tags (Work/Personal)** | Auto-tag calendar accounts; Aki uses for suggestions | 🟡 MEDIUM | Q2 2026 |
+| **Task Colors by Project** | Already doing! (Sport colors: swim blue, bike yellow, run red) | ✅ DONE | Shipped |
+| **Onboarding Overhaul** | Guided setup with slides, tips, email flows | 🔴 HIGH | Q1 2026 |
+
+### Features We Should NOT Build (Let Competitors Own)
+
+| Feature | Competitor Owns | Why We Skip | Alternative |
+|---|---|---|---|
+| **Advanced Power Analysis** | TrainingPeaks | Not our wedge; deep analytics moat | Link to TP Analyze View |
+| **Coach Payment Processing** | TrainingPeaks Payments | Stripe integration commoditized | Suggest coaches use TP Payments |
+| **Multi-Task Project Management** | Akiflow, Asana, Linear | Not athletic domain; dilutes focus | Link to external task tools |
+| **Structured Strength Builder** | TrainingPeaks (new) | Resource-intensive; niche demand | Import from TP; basic display only |
+| **Social Activity Feed** | Strava | Network effects unbeatable | Sync to Strava for social |
+
+### Competitive Monitoring Plan
+
+**Monthly Review:**
+- [ ] Check TrainingPeaks changelog (1st of month)
+- [ ] Check Akiflow changelog (1st of month)
+- [ ] Review Reddit threads (r/triathlon, r/AdvancedRunning, r/cycling)
+- [ ] Track TP feature requests (UserVoice forum)
+- [ ] Monitor Akiflow Discord/community feedback
+
+**Quarterly Deep Dive:**
+- [ ] Re-assess competitive landscape (any new entrants?)
+- [ ] Update feature priority based on competitor moves
+- [ ] Survey our users: "What do you still use TP/Akiflow for?"
+- [ ] Adjust positioning if competitors shift
+
+**Early Warning Signals (Act Immediately):**
+- ⚠️ TrainingPeaks announces calendar integration
+- ⚠️ Strava launches training planning features
+- ⚠️ Akiflow adds sports data or coach features
+- ⚠️ New funded startup enters endurance planning space
+
+---
+
 ## Conclusion
 
 EnduranceBloc will succeed by being **intensely focused on the gap that TrainingPeaks and Akiflow both ignore: the intersection of training + lifestyle + recovery.**
@@ -873,6 +1071,7 @@ TrainingPeaks will always be the analytics engine. Strava will always be the soc
 
 ---
 
-**Document Updated:** January 2, 2026  
-**Version:** 2.1 (TrainingPeaks Competitive Analysis Added)  
-**Owner:** Product Team, EnduranceBloc
+**Document Updated:** January 4, 2026  
+**Version:** 2.2 (Changelog Analysis + Competitive Execution Playbook Added)  
+**Owner:** Product Team, EnduranceBloc  
+**Key Changes:** Added Part 0.5 (changelog analysis), Part 10 (execution playbook), updated risk assessment with Q2 2026 runway validation

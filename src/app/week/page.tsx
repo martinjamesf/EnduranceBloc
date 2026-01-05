@@ -10,7 +10,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { ViewSelector, PageHeader } from '@/components'
+import { PageHeader, Sidebar } from '@/components'
 import { EventModal } from '@/components/Modals/EventModal'
 import { DraggableEvent } from '@/components/Calendar/DraggableEvent'
 import { DroppableTimeSlot } from '@/components/Calendar/DroppableTimeSlot'
@@ -164,6 +164,7 @@ function WeekView() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [profileId, setProfileId] = useState<string | null>(null)
   const resizingEventRef = useRef<CalendarEvent | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Calculate week start from currentDate
   const weekStart = new Date(currentDate)
@@ -467,6 +468,11 @@ function WeekView() {
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        offsetTopClass="top-[64px] md:top-[72px]"
+      />
       <div className="flex flex-col h-full bg-white">
         {/* Header */}
         <PageHeader
@@ -474,6 +480,7 @@ function WeekView() {
           onTodayClick={goToToday}
           onPreviousClick={previousWeek}
           onNextClick={nextWeek}
+          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           onAddEvent={() => handleAddEvent(new Date().toISOString().split('T')[0], 9)}
         />
         {/* Day headers */}

@@ -20,10 +20,6 @@ import {
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export const metadata = {
-  title: 'Sunday Prep | EnduranceBloc',
-  description: 'Plan your week with the Sunday Prep ritual'
-}
 
 export default function SundayPrep() {
   const [weekData, setWeekData] = useState<DayBlock[]>([])

@@ -1,6 +1,41 @@
+'use client'
+
 import '../styles/globals.css'
+import { FormEvent, useState } from 'react'
 
 export default function Home() {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage({ type: 'success', text: data.message })
+        setEmail('')
+      } else if (res.status === 409) {
+        setMessage({ type: 'error', text: 'You\'re already on the waitlist!' })
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Something went wrong' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100">
       <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
@@ -23,20 +58,29 @@ export default function Home() {
 
             <div className="mt-6 w-full max-w-md">
               <p className="text-sm uppercase tracking-[0.18em] text-slate-400 mb-4">Be the first to know when we launch</p>
-              <form className="flex flex-col sm:flex-row gap-3">
+              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 px-5 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00] focus:border-transparent"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 px-5 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00] focus:border-transparent disabled:opacity-50"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition whitespace-nowrap"
+                  disabled={loading}
+                  className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition whitespace-nowrap disabled:opacity-50 cursor-pointer"
                 >
-                  Join Waitlist
+                  {loading ? 'Joining...' : 'Join Waitlist'}
                 </button>
               </form>
+              {message && (
+                <p className={`text-sm mt-3 ${message.type === 'success' ? 'text-[#00C2A8]' : 'text-red-400'}`}>
+                  {message.text}
+                </p>
+              )}
               <p className="text-xs text-slate-400 mt-3">We'll notify you when EnduranceBloc launches. No spam, unsubscribe anytime.</p>
             </div>
 

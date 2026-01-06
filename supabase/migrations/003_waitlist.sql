@@ -17,4 +17,4 @@ create policy "Anyone can insert waitlist entries" on waitlist
 -- Allow anyone to read (for checking duplicates)
 create policy "Anyone can read waitlist" on waitlist
   for select
-  with check (true);
+  using (true);

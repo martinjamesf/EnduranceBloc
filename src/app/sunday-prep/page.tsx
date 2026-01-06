@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { PageHeader } from '@/components'
 import TaskCard from '@/components/Cards/TaskCard'
 import TaskEditModal, { TaskEditFormData } from '@/components/Modals/TaskEditModal'
 import GoogleCalendarWidget from '@/components/Integrations/GoogleCalendarWidget'
@@ -18,6 +19,11 @@ import {
 } from '@/lib/services/sundayPrep'
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+export const metadata = {
+  title: 'Sunday Prep | EnduranceBloc',
+  description: 'Plan your week with the Sunday Prep ritual'
+}
 
 export default function SundayPrep() {
   const [weekData, setWeekData] = useState<DayBlock[]>([])
@@ -240,59 +246,64 @@ export default function SundayPrep() {
 
   if (!hasHydrated || loading) {
     return (
-      <section className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-white">Loading your week...</p>
-      </section>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-slate-300">Loading your week...</p>
+      </div>
     )
   }
 
   return (
-    <section className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="bg-black px-8 py-8 border-b border-[#2a3f5f]">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="font-bold text-[22px] text-white">{formatWeekHeader(weekStart)}</h1>
-          <div className="flex items-center gap-4">
-            <GoogleCalendarWidget weekStart={weekStart} weekEnd={new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)} />
-            <button
-              onClick={handleSaveWeek}
-              disabled={saving}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded transition-colors"
-            >
-              {saving ? 'Saving...' : 'Save Week'}
-            </button>
-          </div>
+    <div className="min-h-screen pb-8">
+      <PageHeader
+        title={formatWeekHeader(weekStart)}
+        subtitle="Your 15-minute Sunday planning ritual"
+      />
+
+      {/* Action Bar */}
+      <div className="px-4 md:px-8 py-6 flex items-center justify-between gap-4 border-b border-white/10">
+        <div className="flex items-center gap-4">
+          <GoogleCalendarWidget 
+            weekStart={weekStart} 
+            weekEnd={new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)} 
+          />
+          {error && (
+            <div className="text-red-400 text-sm flex items-center gap-2">
+              <span>⚠</span> {error}
+            </div>
+          )}
         </div>
-        {error && (
-          <div className="text-red-400 text-sm flex items-center gap-2">
-            <span>⚠</span> {error}
-          </div>
-        )}
+        <button
+          onClick={handleSaveWeek}
+          disabled={saving}
+          className="px-6 py-2.5 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 disabled:opacity-50 transition whitespace-nowrap"
+        >
+          {saving ? 'Saving...' : 'Save Week'}
+        </button>
       </div>
 
       {/* Week Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-2 px-2 pb-8 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-4 px-4 md:px-8 pt-6">
         {weekData.map((dayBlock, dayIndex) => (
           <div
             key={dayBlock.day}
-            className="flex flex-col min-h-[400px]"
+            className="flex flex-col min-h-[450px]"
             onDragOver={handleDragOver}
             onDrop={() => handleDropTask(dayIndex)}
           >
             {/* Day Header */}
-            <div className="bg-black rounded-t-lg py-6 flex items-center justify-center border border-b-0 border-[#2a3f5f]">
-              <h2 className="font-bold text-[22px] text-white">{dayBlock.day}</h2>
+            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-t-xl py-4 flex items-center justify-center">
+              <h2 className="font-semibold text-lg text-white">{dayBlock.day}</h2>
             </div>
 
             {/* Day Column */}
-            <div className="bg-[#132c3b] rounded-b-lg p-2.5 flex flex-col gap-2.5 flex-1 border border-t-0 border-[#2a3f5f]">
+            <div className="bg-white/5 backdrop-blur border border-t-0 border-white/10 rounded-b-xl p-4 flex flex-col gap-3 flex-1">
               {/* LUNCH tag */}
-              <div className="bg-[#5d7583] py-1.5 px-1 rounded flex items-center justify-center">
-                <p className="font-bold text-[8px] text-white tracking-wider uppercase">LUNCH</p>
+              <div className="bg-white/10 py-1.5 px-2 rounded-lg flex items-center justify-center border border-white/10">
+                <p className="font-semibold text-[10px] text-slate-300 tracking-widest uppercase">Lunch</p>
               </div>
 
               {/* Tasks Container */}
-              <div className="flex-1 space-y-2 overflow-y-auto">
+              <div className="flex-1 space-y-2.5 overflow-y-auto">
                 {dayBlock.tasks.map(task => (
                   <div
                     key={task.id}
@@ -313,14 +324,14 @@ export default function SundayPrep() {
               {/* Add Task Button */}
               <button
                 onClick={() => handleAddTask(dayIndex)}
-                className="w-full py-2 px-2 bg-[#1a3d4d] hover:bg-[#244d5d] text-gray-300 hover:text-white font-medium text-sm rounded transition-colors border border-dashed border-[#2a3f5f]"
+                className="w-full py-2.5 px-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-sm rounded-lg transition-colors border border-dashed border-white/20"
               >
                 + Add Task
               </button>
 
               {/* BREAK tag */}
-              <div className="bg-[#5d7583] py-1.5 px-1 rounded flex items-center justify-center">
-                <p className="font-bold text-[8px] text-white tracking-wider uppercase">BREAK</p>
+              <div className="bg-white/10 py-1.5 px-2 rounded-lg flex items-center justify-center border border-white/10">
+                <p className="font-semibold text-[10px] text-slate-300 tracking-widest uppercase">Break</p>
               </div>
             </div>
           </div>
@@ -343,6 +354,6 @@ export default function SundayPrep() {
           onDelete={handleDeleteTask}
         />
       )}
-    </section>
+    </div>
   )
 }

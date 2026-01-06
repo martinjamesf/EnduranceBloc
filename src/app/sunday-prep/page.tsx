@@ -31,6 +31,32 @@ export default function SundayPrep() {
   const [error, setError] = useState<string | null>(null)
   const [draggedTask, setDraggedTask] = useState<{ dayIndex: number; taskId: string } | null>(null)
 
+  // Helpers to compute adjacent weeks
+  const getPreviousWeekStart = (d: Date) => new Date(d.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const getNextWeekStart = (d: Date) => new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+  // Load week data for a given start date
+  const loadWeekForDate = async (ws: Date) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      setWeekStart(ws)
+      if (user) {
+        const data = await loadWeekPlan(user.id, ws)
+        setWeekData(data)
+      } else {
+        const emptyWeek: DayBlock[] = DAYS_OF_WEEK.map((day, i) => ({
+          day,
+          dayOfWeek: i + 1,
+          tasks: []
+        }))
+        setWeekData(emptyWeek)
+      }
+    } catch (err) {
+      console.error('Failed to load week data:', err)
+      setError('Failed to load week data')
+    }
+  }
+
   // Initialize week data
   useEffect(() => {
     const loadInitialData = async () => {
@@ -251,8 +277,11 @@ export default function SundayPrep() {
   return (
     <div className="min-h-screen pb-8">
       <PageHeader
-        title={formatWeekHeader(weekStart)}
-        subtitle="Your 15-minute Sunday planning ritual"
+        dateDisplay={formatWeekHeader(weekStart)}
+        onTodayClick={() => loadWeekForDate(getCurrentWeekStart())}
+        onPreviousClick={() => loadWeekForDate(getPreviousWeekStart(weekStart))}
+        onNextClick={() => loadWeekForDate(getNextWeekStart(weekStart))}
+        onAddEvent={() => handleAddTask(0)}
       />
 
       {/* Action Bar */}

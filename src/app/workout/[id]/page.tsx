@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-export default function WorkoutDetail() {
-=======
 export default function WorkoutDetail({ params }: { params: { id: string } }) {
   const { id } = params
 
->>>>>>> dev
   return (
     <section className="p-6">
       <h2 className="text-xl font-semibold">Workout Detail (placeholder) — {id}</h2>

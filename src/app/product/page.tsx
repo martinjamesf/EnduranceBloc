@@ -22,14 +22,6 @@ export default function Product() {
             <p className="text-lg md:text-xl text-slate-200 max-w-2xl">
               You're not just an athlete—you're a parent, a professional, a partner. See work meetings, family time, and workouts together. Stop choosing between them.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link href="/signup" className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition">
-                Start free
-              </Link>
-              <Link href="/" className="px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">
-                Learn more
-              </Link>
-            </div>
           </div>
         </div>
       </section>

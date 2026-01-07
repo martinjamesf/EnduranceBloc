@@ -177,7 +177,7 @@ export default function Product() {
         taskId="demo-new"
         initialData={{
           title: '',
-          category: 'workout',
+          category: 'Fitness',
           subtitle: '',
           notes: ''
         }}

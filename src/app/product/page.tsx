@@ -1,9 +1,26 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { SundayPrepGrid } from '@/components'
+import TaskEditModal, { TaskEditFormData } from '@/components/Modals/TaskEditModal'
 
 export default function Product() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleAddTask = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleSaveTask = (data: TaskEditFormData) => {
+    // For demo purposes, just close the modal
+    setIsModalOpen(false)
+  }
+
+  const handleDeleteTask = () => {
+    setIsModalOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100">
       {/* Hero */}
@@ -14,7 +31,7 @@ export default function Product() {
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-sm uppercase tracking-[0.2em] text-slate-300">
               <span>EnduranceBloc</span>
               <span className="text-white/50">•</span>
-              <span className="text-[#FF7A00]">Product</span>
+              <span className="text-[#FF7A00]">Product Overview</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-semibold leading-tight text-white">
               Plan your life and training in one honest weekly view.
@@ -57,7 +74,7 @@ export default function Product() {
 
             {/* Right: Interactive preview */}
             <div>
-              <SundayPrepGrid compact={false} showLabels={true} />
+              <SundayPrepGrid compact={false} showLabels={true} onAddClick={handleAddTask} />
             </div>
           </div>
         </div>
@@ -153,6 +170,21 @@ export default function Product() {
           </div>
         </div>
       </section>
+
+      {/* Modal for demo */}
+      <TaskEditModal 
+        isOpen={isModalOpen}
+        taskId="demo-new"
+        initialData={{
+          title: '',
+          category: 'workout',
+          subtitle: '',
+          notes: ''
+        }}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveTask}
+        onDelete={handleDeleteTask}
+      />
     </div>
   )
 }

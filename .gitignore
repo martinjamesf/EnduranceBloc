@@ -9,3 +9,5 @@ dist
 *.log
 supabase/.cache
 supabase/.swp
+.vercel
+.env*.local

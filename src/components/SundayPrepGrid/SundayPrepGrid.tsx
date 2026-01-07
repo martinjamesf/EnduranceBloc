@@ -18,6 +18,7 @@ interface SundayPrepGridProps {
   compact?: boolean
   showLabels?: boolean
   sampleData?: DayColumn[]
+  onAddClick?: () => void
 }
 
 const DEFAULT_SAMPLE_DATA: DayColumn[] = [
@@ -56,7 +57,8 @@ const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string
 export function SundayPrepGrid({
   compact = false,
   showLabels = true,
-  sampleData = DEFAULT_SAMPLE_DATA
+  sampleData = DEFAULT_SAMPLE_DATA,
+  onAddClick
 }: SundayPrepGridProps) {
   return (
     <div className={`rounded-2xl border border-white/10 bg-white/5 backdrop-blur overflow-hidden ${compact ? 'p-4' : 'p-6'}`}>
@@ -111,7 +113,10 @@ export function SundayPrepGrid({
               <div className="flex-1" />
 
               {/* Add button */}
-              <button className="w-full py-2 px-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-medium rounded-lg border border-dashed border-white/20 transition">
+              <button 
+                onClick={onAddClick}
+                className="w-full py-2 px-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-medium rounded-lg border border-dashed border-white/20 transition"
+              >
                 + Add
               </button>
             </div>

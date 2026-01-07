@@ -47,8 +47,14 @@ const steps = [
   }
 ]
 
-export default function Home() {
-  return (
+export const metadata = {
+  title: 'EnduranceBloc • Home',
+  description: 'Weekly planning for endurance athletes. Work + life + training in one view.',
+  robots: { index: false, follow: false } // keep preview out of search until launch
+}
+
+export default function HomeLayout({ children }: { children: ReactNode }) {
+  return(
     <div className="bg-gradient-to-b from-slate-950 via-slate-900 to-white text-slate-100">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#00C2A833,transparent_45%),radial-gradient(circle_at_bottom_right,#FF7A0033,transparent_40%)]" aria-hidden />

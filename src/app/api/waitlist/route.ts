@@ -13,30 +13,58 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const normalizedEmail = String(email).trim().toLowerCase()
+
+    // Ensure env is configured
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !anon) {
+      console.error('Waitlist misconfig: missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
+      return NextResponse.json(
+        { error: 'Server not configured. Please try again later.' },
+        { status: 500 }
+      )
+    }
+
     // Initialize Supabase client (use anon key for public signup)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-    )
+    const supabase = createClient(url, anon)
+
+    // Check existing first to provide friendly 409 without relying on PG code
+    const { data: existing, error: selectError } = await supabase
+      .from('waitlist')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle()
+
+    if (selectError) {
+      console.error('Waitlist select error:', selectError)
+      return NextResponse.json(
+        { error: 'Something went wrong. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Email already on waitlist', isDuplicate: true },
+        { status: 409 }
+      )
+    }
 
     // Try to insert into waitlist
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('waitlist')
       .insert({
-        email,
+        email: normalizedEmail,
         ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
       })
-      .select()
 
     if (error) {
-      // Check if it's a duplicate email
-      if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'Email already on waitlist', isDuplicate: true },
-          { status: 409 }
-        )
-      }
-      throw error
+      console.error('Waitlist insert error:', error)
+      return NextResponse.json(
+        { error: 'Something went wrong. Please try again.' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json(

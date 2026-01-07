@@ -276,6 +276,21 @@ export default function SundayPrep() {
 
   return (
     <div className="min-h-screen pb-8">
+      {/* Teaser hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#00C2A833,transparent_45%),radial-gradient(circle_at_bottom_right,#FF7A0033,transparent_40%)]" aria-hidden />
+        <div className="relative max-w-6xl mx-auto px-4 md:px-8 py-10">
+          <div className="flex flex-col gap-3 max-w-3xl">
+            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs uppercase tracking-[0.2em] text-slate-300 w-max">Sunday Prep</span>
+            <h1 className="text-3xl md:text-4xl font-semibold text-white">Plan your week in 15 minutes</h1>
+            <p className="text-slate-200 max-w-2xl">Review commitments, slot workouts into real windows, and publish to your calendar. Start every week with clarity.</p>
+            <div className="flex gap-3 pt-1">
+              <a href="/signup" className="px-5 py-2.5 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition">Start free</a>
+              <a href="/product" className="px-5 py-2.5 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">See product</a>
+            </div>
+          </div>
+        </div>
+      </section>
       <PageHeader
         dateDisplay={formatWeekHeader(weekStart)}
         onTodayClick={() => loadWeekForDate(getCurrentWeekStart())}

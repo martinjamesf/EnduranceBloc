@@ -81,7 +81,7 @@ export default function Home() {
                   {message.text}
                 </p>
               )}
-              <p className="text-xs text-slate-400 mt-3">We'll notify you when EnduranceBloc launches. No spam, unsubscribe anytime.</p>
+              <p className="text-xs text-slate-400 mt-3">No spam, we'll just notify you when EnduranceBloc launches.</p>
             </div>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-white/70 max-w-2xl">

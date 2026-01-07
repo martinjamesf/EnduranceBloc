@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { SundayPrepGrid } from '@/components'
 
 export default function Product() {
   return (
@@ -19,43 +20,144 @@ export default function Product() {
               Plan your life and training in one honest weekly view.
             </h1>
             <p className="text-lg md:text-xl text-slate-200 max-w-2xl">
-              Work meetings, family time, and workouts—together at last. Slot sessions into real windows, avoid conflicts, and start every week with a plan you can actually follow.
+              You're not just an athlete—you're a parent, a professional, a partner. See work meetings, family time, and workouts together. Stop choosing between them.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link href="/signup" className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition">
                 Start free
               </Link>
-              <Link href="/sunday-prep" className="px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">
-                Explore Sunday Prep
+              <Link href="/" className="px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">
+                Learn more
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Teaser sections */}
-      <section className="bg-white text-slate-900">
-        <div className="max-w-6xl mx-auto px-6 py-14 md:py-18">
-          <div className="grid gap-8 md:grid-cols-3">
+      {/* Sunday Prep Preview */}
+      <section className="relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+          <div className="grid gap-12 md:grid-cols-2 items-center">
+            {/* Left: Text */}
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <h2 className="text-3xl md:text-4xl font-semibold text-white">
+                  The Sunday Prep ritual
+                </h2>
+                <p className="text-slate-200 text-lg">
+                  Spend 15 minutes on Sunday reviewing your week, slotting workouts into real time windows, and publishing a plan you can actually follow.
+                </p>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  'See work, family, and training all together',
+                  'Drag workouts into open windows (no conflicts)',
+                  'Get AI suggestions for best-fit times',
+                  'Publish to your calendar and go'
+                ].map((point) => (
+                  <li key={point} className="flex gap-3 items-start">
+                    <span className="h-2 w-2 rounded-full bg-[#FF7A00] mt-2 flex-shrink-0" />
+                    <span className="text-slate-200">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Right: Interactive preview */}
+            <div>
+              <SundayPrepGrid compact={false} showLabels={true} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="bg-white/5 backdrop-blur border-y border-white/10">
+        <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+          <div className="space-y-4 mb-12">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white">What you get</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
             {[
               {
-                title: 'Life-first calendar',
-                desc: 'See work, family, and training together. Drag workouts into open time without conflicts.'
+                title: 'Real-time sync',
+                desc: 'Auto-import workouts from TrainingPeaks and events from Outlook. Stay synced as coaches update plans.'
               },
               {
-                title: 'Sunday Prep ritual',
-                desc: 'A 15-minute guided flow to lock your week before Monday hits.'
+                title: 'Smart slotting',
+                desc: 'AI suggests best-fit times based on your calendar, recovery needs, and life commitments.'
               },
               {
-                title: 'Smart suggestions',
-                desc: 'AI proposes best-fit times based on your calendar and recovery.'
+                title: 'Conflict-free planning',
+                desc: 'Drag workouts into open windows. Never double-book a meeting with your long run again.'
+              },
+              {
+                title: 'One honest view',
+                desc: 'Work + family + training together. Plan realistically and stop living in spreadsheets.'
+              },
+              {
+                title: 'Published plans',
+                desc: 'After Sunday Prep, publish your week to your calendar. Monday starts with clarity.'
+              },
+              {
+                title: 'Recovery-aware',
+                desc: 'Smart suggestions respect your sleep, nutrition, and rest days.'
               }
             ].map((f) => (
-              <div key={f.title} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm">
-                <h3 className="text-xl font-semibold">{f.title}</h3>
-                <p className="mt-2 text-slate-700 text-sm leading-relaxed">{f.desc}</p>
+              <div key={f.title} className="p-6 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition">
+                <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
+                <p className="text-sm text-slate-300 leading-relaxed">{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Integrations */}
+      <section>
+        <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+          <div className="space-y-4 mb-12">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white">Integrations you trust</h2>
+            <p className="text-slate-200 text-lg max-w-2xl">
+              Connect your existing tools. No manual sync, no copy-paste marathons.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            {[
+              {
+                name: 'TrainingPeaks',
+                desc: 'Pull structured workouts and keep them synced as your coach updates the plan.'
+              },
+              {
+                name: 'Outlook Calendar',
+                desc: 'See meetings and events next to your training. Never miss a conflict.'
+              }
+            ].map((i) => (
+              <div key={i.name} className="p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur">
+                <h3 className="text-2xl font-semibold text-white">{i.name}</h3>
+                <p className="mt-2 text-slate-200">{i.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-gradient-to-r from-[#FF7A00]/10 to-[#00C2A8]/10 border-y border-white/10">
+        <div className="max-w-4xl mx-auto px-6 py-16 md:py-24 text-center space-y-6">
+          <h2 className="text-3xl md:text-4xl font-semibold text-white">
+            Ready to plan smarter?
+          </h2>
+          <p className="text-lg text-slate-200">
+            Join the waitlist and be first to know when we launch. No credit card. Cancel anytime.
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-3">
+            <Link href="/signup" className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition">
+              Start free
+            </Link>
+            <Link href="/" className="px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">
+              Back to home
+            </Link>
           </div>
         </div>
       </section>

@@ -1,5 +1,4 @@
-﻿import '../styles/globals.css'
-import Link from 'next/link'
+﻿import Link from 'next/link'
 
 const features = [
   {
@@ -53,7 +52,7 @@ export const metadata = {
   robots: { index: false, follow: false } // keep preview out of search until launch
 }
 
-export default function HomeLayout({ children }: { children: ReactNode }) {
+export default function Home() {
   return(
     <div className="bg-gradient-to-b from-slate-950 via-slate-900 to-white text-slate-100">
       <section className="relative overflow-hidden">

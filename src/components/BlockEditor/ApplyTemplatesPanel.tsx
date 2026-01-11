@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import type { BlockTemplate, CalendarEvent } from '@/lib/types'
+import type { BlockTemplate } from '@/lib/types'
+import type { CalendarEvent } from '@/lib/services/calendarService'
 
 interface ApplyTemplatesPanelProps {
   templates: BlockTemplate[]

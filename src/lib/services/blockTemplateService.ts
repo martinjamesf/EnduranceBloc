@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient'
-import type { BlockTemplate, BlockConflict, CalendarEvent } from '../types'
+import type { BlockTemplate, BlockConflict } from '../types'
+import type { CalendarEvent } from './calendarService'
 
 // Create block template
 export async function createBlockTemplate(

@@ -86,16 +86,16 @@ export default function Home() {
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-white/70 max-w-2xl">
               <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-2xl">📅</span>
+                <span className="text-3xl" role="img" aria-label="Calendar icon">📅</span>
                 <span className="text-center">Work + life + training in one view</span>
               </div>
               <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-2xl">⏱️</span>
+                <span className="text-3xl" role="img" aria-label="Timer icon">⏱️</span>
                 <span className="text-center">15-minute Sunday planning ritual</span>
               </div>
               <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-2xl">🔄</span>
-                <span className="text-center">Auto-sync with TrainingPeaks & Outlook</span>
+                <span className="text-3xl" role="img" aria-label="Sync icon">🔄</span>
+                <span className="text-center">Intelligent syncing that removes the busywork.</span>
               </div>
             </div>
 

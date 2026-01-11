@@ -1,9 +1,11 @@
 import Link from 'next/link'
+import { Logo } from '../Logo/Logo'
 
 export default function Navigation() {
   return (
     <nav className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-slate-950/80 backdrop-blur">
       <div className="flex items-center gap-3">
+        <Logo className="h-6" />
         <span className="text-lg font-semibold text-white">EnduranceBloc</span>
         <span className="hidden text-xs uppercase tracking-[0.25em] text-white/60 md:inline">Plan smarter every week</span>
       </div>

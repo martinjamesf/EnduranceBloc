@@ -47,10 +47,9 @@ EnduranceBloc is a Next.js-based smart weekly planning app for endurance athlete
 
 ### Key Pages
 - **`/`** (page.tsx): home/dashboard entry
-- **`/login`** (login/page.tsx) and **`/signup`** (signup/page.tsx): auth entry points (signin also available at `/signin`)
+- **`/login`** (login/page.tsx) and **`/signup`** (signup/page.tsx): auth entry points
 - **`/forgot-password`** (forgot-password/page.tsx): reset flow
-- **`/week`** (week/page.tsx): primary weekly calendar grid with workouts + life blocks
-- **`/day`** (day/page.tsx): 24-hour timeline view
+- **`/calendar`** (calendar/page.tsx): unified calendar view with day/week/weekend switching via `?view=` param
 - **`/sunday-prep`** (sunday-prep/page.tsx): 5-step weekly planning ritual
 - **`/block-editor`** (block-editor/page.tsx): drag-and-drop grid editor
 - **`/workout/[id]`** (workout/[id]/page.tsx): workout detail/deep link
@@ -120,6 +119,8 @@ Create `.env.local` (see `.env.local.example`):
 - **Supabase Setup:** `src/lib/supabaseClient.ts`
 - **OAuth + Integrations:** `src/lib/integrations/{trainingpeaks,outlook}.ts`
 - **Sync Logic:** `src/lib/services/syncService.ts`
+- **Calendar Hooks:** `src/lib/hooks/useCalendarState.ts`, `src/lib/hooks/useCalendarEvents.ts`
+- **Unified Calendar:** `src/app/(app)/calendar/page.tsx` (replaces old /day, /week, /weekend pages)
 - **Design Tokens:** `tailwind.config.cjs` (colors, spacing)
 - **Database Schema:** `supabase/migrations/000_init.sql` (or Supabase SQL editor)
 

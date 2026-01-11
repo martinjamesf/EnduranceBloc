@@ -9,6 +9,13 @@ export default function Navigation() {
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
   const isHome = pathname === '/'
+  
+  // Hide navigation on app pages (calendar, block-editor, settings, etc.)
+  const isAppPage = pathname?.startsWith('/calendar') || 
+                    pathname?.startsWith('/block-editor') || 
+                    pathname?.startsWith('/settings') ||
+                    pathname?.startsWith('/sunday-prep') ||
+                    pathname?.startsWith('/workout')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +25,10 @@ export default function Navigation() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+  
+  if (isAppPage) {
+    return null
+  }
 
   // Icon SVG for calendar
   const calendarIcon = (

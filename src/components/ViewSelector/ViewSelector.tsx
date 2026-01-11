@@ -1,16 +1,15 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 
-export default function ViewSelector() {
-  const pathname = usePathname()
+type ViewSelectorProps = {
+  currentView: 'day' | 'week' | 'weekend'
+  onViewChange: (view: 'day' | 'week' | 'weekend') => void
+}
+
+export default function ViewSelector({ currentView, onViewChange }: ViewSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-
-  // Determine current view
-  const currentView = pathname === '/day' ? 'Day' : pathname === '/weekend' ? 'Weekend' : 'Week'
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -24,11 +23,13 @@ export default function ViewSelector() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const options = [
-    { label: 'Week', href: '/week' },
-    { label: 'Day', href: '/day' },
-    { label: 'Weekend', href: '/weekend' },
+  const options: Array<{ label: string; value: 'day' | 'week' | 'weekend' }> = [
+    { label: 'Week', value: 'week' },
+    { label: 'Day', value: 'day' },
+    { label: 'Weekend', value: 'weekend' },
   ]
+
+  const currentLabel = options.find(opt => opt.value === currentView)?.label || 'Week'
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -39,7 +40,7 @@ export default function ViewSelector() {
         aria-label="Select view"
         aria-expanded={isOpen}
       >
-        <span className="text-xs font-medium text-[#0c41ff]">{currentView}</span>
+        <span className="text-xs font-medium text-[#0c41ff]">{currentLabel}</span>
         <svg className="w-4 h-4 text-[#0c41ff]" fill="currentColor" viewBox="0 0 20 20">
           <path
             fillRule="evenodd"
@@ -53,18 +54,20 @@ export default function ViewSelector() {
       {isOpen && (
         <div className="absolute top-full mt-1 left-0 bg-white border border-[#dbe8fe] rounded shadow-lg z-30">
           {options.map((option) => (
-            <Link
-              key={option.label}
-              href={option.href}
-              onClick={() => setIsOpen(false)}
-              className={`block px-4 py-2 text-xs font-medium transition-colors first:rounded-t last:rounded-b ${
-                currentView === option.label
+            <button
+              key={option.value}
+              onClick={() => {
+                onViewChange(option.value)
+                setIsOpen(false)
+              }}
+              className={`block w-full text-left px-4 py-2 text-xs font-medium transition-colors first:rounded-t last:rounded-b ${
+                currentView === option.value
                   ? 'bg-[#0c41ff] text-white'
                   : 'text-[#0D1D35] hover:bg-gray-100'
               }`}
             >
               {option.label}
-            </Link>
+            </button>
           ))}
         </div>
       )}

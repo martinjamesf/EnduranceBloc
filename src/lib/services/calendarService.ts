@@ -10,6 +10,7 @@ export interface CalendarEvent {
   source?: 'trainingpeaks' | 'manual' | 'google'
   color?: string
   workoutType?: 'swim' | 'bike' | 'run' | 'other'
+  category?: string // Block category for template blocks
   googleEventId?: string
   localBlockId?: string
 }

@@ -1,7 +1,6 @@
-'use client'
-
 import React from 'react'
 import { ViewSelector } from '@/components'
+import type { CalendarView } from '@/lib/hooks/useCalendarState'
 
 interface PageHeaderProps {
   dateDisplay: string // Format: "Month Day - Day Year" e.g., "Jan 3-Jan 4 2026"
@@ -10,9 +9,22 @@ interface PageHeaderProps {
   onNextClick: () => void
   onToggleSidebar?: () => void
   onAddEvent: () => void
+  hideDateNav?: boolean // Hide date navigation controls
+  currentView?: CalendarView // Current calendar view
+  onViewChange?: (view: CalendarView) => void // Callback to change view
 }
 
-export function PageHeader({ dateDisplay, onTodayClick, onPreviousClick, onNextClick, onToggleSidebar, onAddEvent }: PageHeaderProps) {
+export function PageHeader({ 
+  dateDisplay, 
+  onTodayClick, 
+  onPreviousClick, 
+  onNextClick, 
+  onToggleSidebar, 
+  onAddEvent, 
+  hideDateNav,
+  currentView,
+  onViewChange 
+}: PageHeaderProps) {
   return (
     <div className="flex flex-col gap-3 border-b border-[#dbe8fe] px-4 py-3 md:flex-row md:items-center md:justify-between">
       {/* Left section: Sidebar toggle, chevrons, Today button, ViewSelector, and date range */}
@@ -30,56 +42,60 @@ export function PageHeader({ dateDisplay, onTodayClick, onPreviousClick, onNextC
             </svg>
           </button>
         )}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onPreviousClick}
-            className="p-2 rounded-full bg-white hover:bg-gray-100 shadow-sm"
-            aria-label="Previous"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={onNextClick}
-            className="p-2 rounded-full bg-white hover:bg-gray-100 shadow-sm"
-            aria-label="Next"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={onTodayClick}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
-          >
-            Today
-          </button>
-        </div>
-        <ViewSelector />
-        <h1 className="text-2xl md:text-3xl font-medium text-[#333]">
-          {dateDisplay}
-        </h1>
+        {!hideDateNav && (
+          <>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onPreviousClick}
+                className="p-2 rounded-full bg-white hover:bg-gray-100 shadow-sm"
+                aria-label="Previous"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={onNextClick}
+                className="p-2 rounded-full bg-white hover:bg-gray-100 shadow-sm"
+                aria-label="Next"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={onTodayClick}
+                className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Today
+              </button>
+            </div>
+            {currentView && onViewChange && (
+              <ViewSelector currentView={currentView} onViewChange={onViewChange} />
+            )}
+          </>
+        )}
+        <h1 className="text-2xl md:text-3xl font-medium text-[#333]">{dateDisplay}</h1>
       </div>
 
       {/* Right section: Search and Add event buttons */}

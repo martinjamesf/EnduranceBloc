@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
 import { PageHeader } from '@/components'
 import TaskCard from '@/components/Cards/TaskCard'
 import TaskEditModal, { TaskEditFormData } from '@/components/Modals/TaskEditModal'
@@ -22,6 +23,7 @@ const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 
 export default function SundayPrep() {
+  usePageAnalytics('sundayPrep')
   const [weekData, setWeekData] = useState<DayBlock[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

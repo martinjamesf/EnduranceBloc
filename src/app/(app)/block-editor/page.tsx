@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
 import { useBlockTemplates } from '@/lib/hooks/useBlockTemplates'
 import { useApplyTemplates } from '@/lib/hooks/useApplyTemplates'
 import { fetchCalendarEvents } from '@/lib/services/calendarService'
@@ -12,6 +13,7 @@ import { PageHeader } from '@/components'
 import type { BlockTemplate, BlockCategory } from '@/lib/types'
 
 export default function BlockEditorPage() {
+  usePageAnalytics('blockEditor')
   const [profileId, setProfileId] = useState<string | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<BlockTemplate | null>(null)
   const [showForm, setShowForm] = useState(false)

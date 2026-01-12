@@ -1,12 +1,14 @@
 "use client"
 
 import React, { useState } from "react"
+import { usePageAnalytics } from "@/lib/analytics/usePageAnalytics"
 import Input from "../../../components/Inputs/Input"
 import Link from "next/link"
 import { supabase } from "../../../lib/supabaseClient"
 import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+  usePageAnalytics('login')
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [remember, setRemember] = useState(false)

@@ -82,9 +82,19 @@ npm run import:schema  # Load schema via psql (see .github/docs/SUPABASE_SETUP.m
 ### Environment Setup
 Create `.env.local` (see `.env.local.example`):
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from Supabase dashboard)
+- `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` (from Google Analytics; see `.github/docs/GOOGLE_ANALYTICS_SETUP.md`)
 - `TRAININGPEAKS_CLIENT_ID`, `TRAININGPEAKS_REDIRECT_URI`
 - `OUTLOOK_CLIENT_ID`, `OUTLOOK_REDIRECT_URI`
 - Optional: `SUPABASE_SERVICE_ROLE_KEY` (for admin DB access)
+
+## Analytics
+
+### Page Views & Tracking
+- All pages defined in `src/lib/analytics/pageRegistry.ts` with metadata (name, description, tags, category)
+- Use `usePageAnalytics('pageKey')` hook in each page to auto-track views
+- Custom events tracked via `trackEvent('event_name', params)` function
+- User identification after login: `setAnalyticsUserId(user.id)`; on logout: `clearAnalyticsUserId()`
+- Full setup guide: `.github/docs/GOOGLE_ANALYTICS_SETUP.md`
 
 ## Critical Conventions & Gotchas
 
@@ -117,6 +127,7 @@ Create `.env.local` (see `.env.local.example`):
 ## File Reference Map
 - **Core Types:** `src/lib/types.ts`
 - **Supabase Setup:** `src/lib/supabaseClient.ts`
+- **Analytics:** `src/lib/analytics/pageRegistry.ts`, `src/lib/analytics/usePageAnalytics.ts`
 - **OAuth + Integrations:** `src/lib/integrations/{trainingpeaks,outlook}.ts`
 - **Sync Logic:** `src/lib/services/syncService.ts`
 - **Calendar Hooks:** `src/lib/hooks/useCalendarState.ts`, `src/lib/hooks/useCalendarEvents.ts`

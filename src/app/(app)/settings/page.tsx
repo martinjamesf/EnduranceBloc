@@ -1,8 +1,10 @@
 'use client'
 
+import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
 import GoogleCalendarWidget from '@/components/Integrations/GoogleCalendarWidget'
 
 export default function CalendarSyncSettings() {
+  usePageAnalytics('settings')
   const today = new Date()
   const weekEnd = new Date(today)
   weekEnd.setDate(today.getDate() + 6)

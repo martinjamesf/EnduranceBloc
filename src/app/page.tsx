@@ -2,8 +2,10 @@
 
 import '../styles/globals.css'
 import { FormEvent, useState } from 'react'
+import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
 
 export default function Home() {
+  usePageAnalytics('home')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)

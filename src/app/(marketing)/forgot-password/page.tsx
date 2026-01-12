@@ -1,11 +1,13 @@
 "use client"
 
 import React, { useState } from "react"
+import { usePageAnalytics } from "@/lib/analytics/usePageAnalytics"
 import Input from "../../../components/Inputs/Input"
 import Link from "next/link"
 import { supabase } from "../../../lib/supabaseClient"
 
 export default function ForgotPasswordPage() {
+  usePageAnalytics('forgotPassword')
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)

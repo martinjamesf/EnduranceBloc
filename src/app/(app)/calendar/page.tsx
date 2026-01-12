@@ -11,6 +11,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
+import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
 import { PageHeader, Sidebar, ViewSelector } from '@/components'
 import { EventModal } from '@/components/Modals/EventModal'
 import { DraggableEvent } from '@/components/Calendar/DraggableEvent'

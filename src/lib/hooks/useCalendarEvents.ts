@@ -10,15 +10,26 @@ import {
 export function useCalendarEvents(
   setEvents: React.Dispatch<React.SetStateAction<CalendarEvent[]>>,
   setModalOpen: (open: boolean) => void,
-  setSelectedEvent: (event: CalendarEvent | null) => void
+  setSelectedEvent: (event: CalendarEvent | null) => void,
+  setLoading: (loading: boolean) => void
 ) {
   const resizingEventRef = useRef<CalendarEvent | null>(null)
 
   const loadEvents = async (startDate: string, endDate: string, profileId: string | null) => {
-    if (!profileId) return
+    if (!profileId) {
+      setLoading(false)
+      return
+    }
 
-    const fetchedEvents = await fetchCalendarEvents(startDate, endDate, profileId)
-    setEvents(fetchedEvents)
+    try {
+      setLoading(true)
+      const fetchedEvents = await fetchCalendarEvents(startDate, endDate, profileId)
+      setEvents(fetchedEvents)
+    } catch (error) {
+      console.error('Error loading events:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSaveEvent = async (eventData: any, profileId: string | null, selectedEvent: CalendarEvent | null) => {
@@ -134,10 +145,12 @@ export function useCalendarEvents(
     const draggedEvent = events.find(e => e.id === draggedEventId)
     if (!draggedEvent) return
 
+    // Parse slot ID format: YYYY-MM-DD-HH-mm
     const parts = slotId.split('-')
     
+    // If the drop target is not a valid time slot (e.g., dropped on itself or another event), ignore
     if (parts.length !== 5) {
-      console.error('Invalid slot ID format - expected 5 parts, got', parts.length)
+      console.log('Drop ignored - not a valid time slot:', slotId)
       return
     }
     
@@ -148,7 +161,7 @@ export function useCalendarEvents(
     const newMinute = parseInt(parts[4], 10)
     
     if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(newHour) || isNaN(newMinute)) {
-      console.error('Invalid date components:', { year, month, day, newHour, newMinute })
+      console.log('Drop ignored - invalid date components in slot ID:', slotId)
       return
     }
 

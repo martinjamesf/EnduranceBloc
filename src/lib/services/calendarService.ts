@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient'
+import type { BlockCategory } from '@/lib/types'
 
 export interface CalendarEvent {
   id: string
@@ -10,7 +11,7 @@ export interface CalendarEvent {
   source?: 'trainingpeaks' | 'manual' | 'google'
   color?: string
   workoutType?: 'swim' | 'bike' | 'run' | 'other'
-  category?: string // Block category for template blocks
+  category?: BlockCategory // Block category for template blocks
   googleEventId?: string
   localBlockId?: string
 }

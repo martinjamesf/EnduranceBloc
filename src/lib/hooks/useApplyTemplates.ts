@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import type { BlockTemplate, BlockConflict, CalendarEvent } from '@/lib/types'
+import type { BlockTemplate, BlockConflict } from '@/lib/types'
+import type { CalendarEvent } from '@/lib/services/calendarService'
 import { applyTemplatesToRange } from '@/lib/services/blockTemplateService'
 
 export function useApplyTemplates() {

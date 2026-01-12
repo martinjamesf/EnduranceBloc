@@ -303,7 +303,7 @@ function CalendarContent() {
     handleResize,
     handleResizeEnd,
     handleDragEnd,
-  } = useCalendarEvents(setEvents, setModalOpen, setSelectedEvent)
+  } = useCalendarEvents(setEvents, setModalOpen, setSelectedEvent, setLoading)
 
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
 

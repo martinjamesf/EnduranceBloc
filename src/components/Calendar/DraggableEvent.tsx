@@ -33,13 +33,9 @@ export function DraggableEvent({
 
   const [isResizing, setIsResizing] = useState<'top' | 'bottom' | null>(null)
   const [resizeStartY, setResizeStartY] = useState(0)
+  const [accumulatedDelta, setAccumulatedDelta] = useState(0)
+  const [lastAppliedSnap, setLastAppliedSnap] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: isResizing ? 'none' : transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
 
   const handleEventClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -48,17 +44,12 @@ export function DraggableEvent({
     }
   }
 
-  // Calculate pixels per minute based on slot type and container height
+  // Calculate pixels per minute based on slot type
   const getPixelsPerMinute = useCallback(() => {
-    if (!containerRef.current) return 0
-    
-    const containerHeight = containerRef.current.getBoundingClientRect().height
-    const eventStart = new Date(event.start)
-    const eventEnd = new Date(event.end)
-    const durationMinutes = (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60)
-    
-    return containerHeight / durationMinutes
-  }, [event])
+    // 15-minute slots are typically 16-20px (mobile-desktop)
+    // 60-minute slots are typically 12-16px
+    return isSleepTime ? 0.25 : 1.25 // Approximate px per minute
+  }, [isSleepTime])
 
   // Get the snap interval (15 minutes for waking, 60 minutes for sleep)
   const getSnapInterval = () => {
@@ -71,6 +62,8 @@ export function DraggableEvent({
     
     setIsResizing(edge)
     setResizeStartY(e.clientY)
+    setAccumulatedDelta(0)
+    setLastAppliedSnap(0)
     
     if (onResizeStart) {
       onResizeStart(event, edge)
@@ -78,52 +71,59 @@ export function DraggableEvent({
   }
 
   const handleResizeMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing || !containerRef.current) return
+    if (!isResizing) return
 
     e.preventDefault()
     
     const deltaY = e.clientY - resizeStartY
     const pixelsPerMinute = getPixelsPerMinute()
-    
-    if (pixelsPerMinute === 0) return
-    
-    // Convert pixel movement to minutes, then round to nearest snap interval
-    const totalDeltaMinutes = deltaY / pixelsPerMinute
     const snapInterval = getSnapInterval()
-    const deltaMinutes = Math.round(totalDeltaMinutes / snapInterval) * snapInterval
     
-    if (deltaMinutes === 0) return
-
-    const eventStart = new Date(event.start)
-    const eventEnd = new Date(event.end)
-    let newStart = eventStart
-    let newEnd = eventEnd
-
-    if (isResizing === 'top') {
-      // Dragging top edge - change start time
-      newStart = new Date(eventStart.getTime() + deltaMinutes * 60 * 1000)
+    // Convert pixel movement to minutes
+    const totalMinutes = deltaY / pixelsPerMinute
+    
+    // Calculate how many snap intervals we've crossed
+    const snapsPassed = Math.floor(totalMinutes / snapInterval)
+    
+    // Only update if we've crossed a new snap threshold
+    if (snapsPassed !== lastAppliedSnap) {
+      const deltaMinutes = (snapsPassed - lastAppliedSnap) * snapInterval
       
-      // Prevent end time from going before start time (min 15 minutes)
-      if (newStart >= newEnd) {
-        newStart = new Date(newEnd.getTime() - getSnapInterval() * 60 * 1000)
-      }
-    } else if (isResizing === 'bottom') {
-      // Dragging bottom edge - change end time
-      newEnd = new Date(eventEnd.getTime() + deltaMinutes * 60 * 1000)
-      
-      // Prevent end time from going before start time (min 15 minutes)
-      if (newEnd <= newStart) {
-        newEnd = new Date(newStart.getTime() + getSnapInterval() * 60 * 1000)
-      }
-    }
+      const eventStart = new Date(event.start)
+      const eventEnd = new Date(event.end)
+      let newStart = eventStart
+      let newEnd = eventEnd
 
-    if (onResize) {
-      onResize(event, newStart.toISOString(), newEnd.toISOString())
+      if (isResizing === 'top') {
+        // Dragging top edge - change start time
+        newStart = new Date(eventStart.getTime() + deltaMinutes * 60 * 1000)
+        
+        // Prevent end time from going before start time (min snap interval)
+        if (newStart >= eventEnd) {
+          newStart = new Date(eventEnd.getTime() - snapInterval * 60 * 1000)
+        }
+      } else if (isResizing === 'bottom') {
+        // Dragging bottom edge - change end time
+        newEnd = new Date(eventEnd.getTime() + deltaMinutes * 60 * 1000)
+        
+        // Prevent end time from going before start time (min snap interval)
+        if (newEnd <= eventStart) {
+          newEnd = new Date(eventStart.getTime() + snapInterval * 60 * 1000)
+        }
+      }
+
+      if (onResize) {
+        onResize(event, newStart.toISOString(), newEnd.toISOString())
+      }
+      
+      setLastAppliedSnap(snapsPassed)
     }
-  }, [isResizing, resizeStartY, event, getPixelsPerMinute, getSnapInterval, onResize])
+  }, [isResizing, resizeStartY, lastAppliedSnap, event, getPixelsPerMinute, getSnapInterval, onResize])
 
   const handleResizeMouseUp = useCallback(() => {
     setIsResizing(null)
+    setAccumulatedDelta(0)
+    setLastAppliedSnap(0)
     if (onResizeEnd) {
       onResizeEnd()
     }
@@ -140,6 +140,12 @@ export function DraggableEvent({
       }
     }
   }, [isResizing, handleResizeMouseMove, handleResizeMouseUp])
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: isResizing ? 'none' : transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
 
   const startTime = new Date(event.start).toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -176,7 +182,9 @@ export function DraggableEvent({
       {/* Top resize handle */}
       <div
         onMouseDown={(e) => handleResizeMouseDown(e, 'top')}
-        className="absolute top-0 left-0 right-0 h-1 hover:bg-black/20 hover:h-1.5 cursor-ns-resize transition-all opacity-0 group-hover:opacity-100"
+        className={`absolute top-0 left-0 right-0 h-1.5 hover:bg-black/30 hover:h-2 cursor-ns-resize transition-all ${
+          isResizing === 'top' ? 'bg-black/30 h-2 opacity-100' : 'opacity-0 group-hover:opacity-100'
+        }`}
         role="button"
         tabIndex={0}
         aria-label="Drag to adjust start time"
@@ -198,7 +206,9 @@ export function DraggableEvent({
       {/* Bottom resize handle */}
       <div
         onMouseDown={(e) => handleResizeMouseDown(e, 'bottom')}
-        className="absolute bottom-0 left-0 right-0 h-1 hover:bg-black/20 hover:h-1.5 cursor-ns-resize transition-all opacity-0 group-hover:opacity-100"
+        className={`absolute bottom-0 left-0 right-0 h-1.5 hover:bg-black/30 hover:h-2 cursor-ns-resize transition-all ${
+          isResizing === 'bottom' ? 'bg-black/30 h-2 opacity-100' : 'opacity-0 group-hover:opacity-100'
+        }`}
         role="button"
         tabIndex={0}
         aria-label="Drag to adjust end time"

@@ -8,10 +8,13 @@ export async function createBlockTemplate(
   profileId: string
 ): Promise<BlockTemplate | null> {
   try {
+    // Map the template to database format
+    const dbTemplate = mapBlockTemplateToDb(template as BlockTemplate)
+    
     const { data, error } = await supabase
       .from('block_templates')
       .insert({
-        ...template,
+        ...dbTemplate,
         profile_id: profileId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -20,7 +23,12 @@ export async function createBlockTemplate(
       .single()
 
     if (error) {
-      console.error('Error creating block template:', error)
+      console.error('Error creating block template:', error, {
+        details: error.details,
+        hint: error.hint,
+        message: error.message,
+        code: error.code
+      })
       return null
     }
 
@@ -58,16 +66,22 @@ export async function updateBlockTemplate(
   updates: Partial<BlockTemplate>
 ): Promise<boolean> {
   try {
+    const dbUpdates = mapBlockTemplateToDbPartial(updates)
     const { error } = await supabase
       .from('block_templates')
       .update({
-        ...mapBlockTemplateToDb(updates as BlockTemplate),
+        ...dbUpdates,
         updated_at: new Date().toISOString(),
       })
       .eq('id', templateId)
 
     if (error) {
-      console.error('Error updating block template:', error)
+      console.error('Error updating block template:', error, {
+        details: error.details,
+        hint: error.hint,
+        message: error.message,
+        code: error.code
+      })
       return false
     }
 
@@ -380,4 +394,19 @@ function mapBlockTemplateToDb(template: BlockTemplate): any {
     description: template.description,
     active: template.active,
   }
+}
+
+// Helper: Map partial BlockTemplate to database row (for updates)
+function mapBlockTemplateToDbPartial(template: Partial<BlockTemplate>): any {
+  const result: any = {}
+  if (template.name !== undefined) result.name = template.name
+  if (template.category !== undefined) result.category = template.category
+  if (template.color !== undefined) result.color = template.color
+  if (template.defaultStart !== undefined) result.default_start = template.defaultStart
+  if (template.defaultEnd !== undefined) result.default_end = template.defaultEnd
+  if (template.recurrence !== undefined) result.recurrence = template.recurrence
+  if (template.constraints !== undefined) result.constraints = template.constraints
+  if (template.description !== undefined) result.description = template.description
+  if (template.active !== undefined) result.active = template.active
+  return result
 }

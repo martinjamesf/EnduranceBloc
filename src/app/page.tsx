@@ -2,6 +2,7 @@
 
 import '../styles/globals.css'
 import { FormEvent, useState } from 'react'
+import Image from 'next/image'
 import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
 
 export default function Home() {
@@ -15,13 +16,16 @@ export default function Home() {
     setMessage(null)
 
     try {
+      console.log('[Waitlist] Submitting email:', email)
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       })
 
+      console.log('[Waitlist] Response status:', res.status)
       const data = await res.json()
+      console.log('[Waitlist] Response data:', data)
 
       if (res.ok) {
         setMessage({ type: 'success', text: data.message })
@@ -32,6 +36,7 @@ export default function Home() {
         setMessage({ type: 'error', text: data.error || 'Something went wrong' })
       }
     } catch (err) {
+      console.error('[Waitlist] Fetch error:', err)
       setMessage({ type: 'error', text: 'Network error. Please try again.' })
     } finally {
       setLoading(false)
@@ -41,8 +46,30 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-slate-100">
       <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#00C2A833,transparent_45%),radial-gradient(circle_at_bottom_right,#FF7A0033,transparent_40%)]" aria-hidden />
-        <div className="relative max-w-4xl mx-auto px-6 py-20 text-center">
+        {/* Hero image with duotone effect */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/hero-stairs.jpg"
+            alt=""
+            fill
+            priority
+            quality={75}
+            className="object-cover object-center md:object-center"
+            style={{ filter: 'grayscale(100%) contrast(1.2) brightness(0.7)' }}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1920px"
+          />
+        </div>
+        
+        {/* Duotone color overlay - creates brand-colored version */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FF7A00]/60 via-slate-950/80 to-[#00C2A8]/50 mix-blend-multiply" aria-hidden />
+        
+        {/* Accent gradients for depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#00C2A855,transparent_50%),radial-gradient(circle_at_bottom_right,#FF7A0055,transparent_45%)]" aria-hidden />
+        
+        {/* Vignette for content focus */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(15,23,42,0.3)_70%,rgba(15,23,42,0.6)_100%)]" aria-hidden />
+        
+        <div className="relative max-w-4xl mx-auto px-6 py-20 text-center z-10">
           <div className="flex flex-col gap-8 items-center">
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-sm uppercase tracking-[0.2em] text-slate-300">
               <span>Life + Training</span>

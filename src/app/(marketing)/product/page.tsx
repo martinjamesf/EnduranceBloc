@@ -1,12 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { SundayPrepGrid } from '@/components'
 import TaskEditModal, { TaskEditFormData } from '@/components/Modals/TaskEditModal'
 
 export default function Product() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const handleAddTask = () => {
     setIsModalOpen(true)
@@ -19,6 +22,39 @@ export default function Product() {
 
   const handleDeleteTask = () => {
     setIsModalOpen(false)
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage(null)
+
+    try {
+      console.log('[Waitlist] Submitting email:', email)
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+
+      console.log('[Waitlist] Response status:', res.status)
+      const data = await res.json()
+      console.log('[Waitlist] Response data:', data)
+
+      if (res.ok) {
+        setMessage({ type: 'success', text: data.message })
+        setEmail('')
+      } else if (res.status === 409) {
+        setMessage({ type: 'error', text: 'You\'re already on the waitlist!' })
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Something went wrong' })
+      }
+    } catch (err) {
+      console.error('[Waitlist] Fetch error:', err)
+      setMessage({ type: 'error', text: 'Network error. Please try again.' })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -158,16 +194,36 @@ export default function Product() {
             Ready to plan smarter?
           </h2>
           <p className="text-lg text-slate-200">
-            Join the waitlist and be first to know when we launch. No credit card. Cancel anytime.
+            Join the waitlist and be first to know when we launch.
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-3">
-            <Link href="/signup" className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition">
-              Start free
-            </Link>
-            <Link href="/" className="px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">
-              Back to home
-            </Link>
+          <div className="w-full max-w-md mx-auto space-y-3">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 px-5 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF7A00] focus:border-transparent disabled:opacity-50"
+                required
+                disabled={loading}
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition whitespace-nowrap disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'Joining...' : 'Join Waitlist'}
+              </button>
+            </form>
+            {message && (
+              <p className={`text-sm ${message.type === 'success' ? 'text-[#00C2A8]' : 'text-red-400'}`}>
+                {message.text}
+              </p>
+            )}
           </div>
+          <Link href="/" className="inline-block px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">
+            Back to home
+          </Link>
         </div>
       </section>
 

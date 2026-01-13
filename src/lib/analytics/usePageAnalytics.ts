@@ -25,19 +25,23 @@ export function usePageAnalytics(pageKey: string) {
 
     // Send page view to Google Analytics
     if (typeof window !== 'undefined' && window.gtag) {
+      const measurementId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+
       window.gtag('event', 'page_view', {
         page_path: pathname,
         page_title: metadata.name,
         page_description: metadata.description,
       })
 
-      // Set custom dimensions for filtering
-      window.gtag('config', {
-        custom_map: {
-          dimension1: 'page_category',
-          dimension2: 'page_tags',
-        },
-      })
+      if (measurementId) {
+        // Attach custom dimensions to the active GA property
+        window.gtag('config', measurementId, {
+          custom_map: {
+            dimension1: 'page_category',
+            dimension2: 'page_tags',
+          },
+        })
+      }
 
       window.gtag('event', 'view_page', {
         page_category: metadata.category,
@@ -67,9 +71,12 @@ export function trackEvent(
  */
 export function setAnalyticsUserId(userId: string) {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', {
-      user_id: userId,
-    })
+    const measurementId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+    if (measurementId) {
+      window.gtag('config', measurementId, {
+        user_id: userId,
+      })
+    }
   }
 }
 
@@ -78,9 +85,12 @@ export function setAnalyticsUserId(userId: string) {
  */
 export function clearAnalyticsUserId() {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', {
-      user_id: null,
-    })
+    const measurementId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+    if (measurementId) {
+      window.gtag('config', measurementId, {
+        user_id: null,
+      })
+    }
   }
 }
 

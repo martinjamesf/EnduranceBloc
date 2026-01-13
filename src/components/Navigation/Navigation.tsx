@@ -62,10 +62,14 @@ export default function Navigation() {
     }`}>
       <div className="flex items-center justify-between px-4 py-3 gap-3 text-sm font-semibold">
         {/* Left section: Logo */}
-        <div className="flex items-center gap-3">
+        <Link
+          href="/"
+          aria-label="Back to home"
+          className="flex items-center gap-3 text-white hover:opacity-90 transition"
+        >
           <Logo className="h-6" />
           <span className="hidden text-xs uppercase tracking-[0.25em] text-white/60 md:inline">Plan smarter every week</span>
-        </div>
+        </Link>
 
         {/* Navigation items */}
         <div className="flex items-center gap-3">

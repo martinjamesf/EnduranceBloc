@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 
 interface SidebarProps {
   isOpen: boolean
@@ -152,6 +153,37 @@ export default function Sidebar({ isOpen, onClose, offsetTopClass }: SidebarProp
           </div>
 
           <hr className="border-[#dadce0] my-2" />
+
+          {/* Navigation Section */}
+          <div className="px-4 py-3 border-b border-[#dadce0]">
+            <h3 className="text-xs uppercase tracking-widest font-semibold text-[#666] mb-3">Navigation</h3>
+            <nav className="space-y-1">
+              <Link
+                href="/calendar"
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-[#333] hover:bg-gray-100 transition-colors"
+              >
+                📅 Calendar
+              </Link>
+              <Link
+                href="/sunday-prep"
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-[#333] hover:bg-gray-100 transition-colors"
+              >
+                📋 Sunday Prep
+              </Link>
+              <Link
+                href="/block-editor"
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-[#333] hover:bg-gray-100 transition-colors"
+              >
+                🔨 Block Editor
+              </Link>
+              <Link
+                href="/settings"
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-[#333] hover:bg-gray-100 transition-colors"
+              >
+                ⚙️ Settings
+              </Link>
+            </nav>
+          </div>
 
           {/* Non-negotiables Section */}
           <div className="px-4 py-3 flex-1 overflow-y-auto">

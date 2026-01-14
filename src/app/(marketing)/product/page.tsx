@@ -96,9 +96,9 @@ export default function Product() {
               <ul className="space-y-3">
                 {[
                   'See work, family, and training all together',
-                  'Drag workouts into open windows (no conflicts)',
-                  'Get AI suggestions for best-fit times',
-                  'Publish to your calendar and go'
+                  'Drag workouts into open times to avoid conflicts',
+                  'Get AI suggestions for better workout results',
+                  'Take your plan and crush your week'
                 ].map((point) => (
                   <li key={point} className="flex gap-3 items-start">
                     <span className="h-2 w-2 rounded-full bg-[#FF7A00] mt-2 flex-shrink-0" />
@@ -116,44 +116,114 @@ export default function Product() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Pricing */}
       <section className="bg-white/5 backdrop-blur border-y border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
-          <div className="space-y-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-semibold text-white">What you get</h2>
+          <div className="space-y-4 mb-16">
+            <h2 className="text-3xl md:text-4xl font-semibold text-white">Plans for every athlete</h2>
+            <p className="text-lg text-slate-200 max-w-2xl">Start free. Upgrade when you're ready. Coach collaboration always included.</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              {
-                title: 'Real-time sync',
-                desc: 'Auto-import workouts from TrainingPeaks and events from Outlook. Stay synced as coaches update plans.'
-              },
-              {
-                title: 'Smart slotting',
-                desc: 'AI suggests best-fit times based on your calendar, recovery needs, and life commitments.'
-              },
-              {
-                title: 'Conflict-free planning',
-                desc: 'Drag workouts into open windows. Never double-book a meeting with your long run again.'
-              },
-              {
-                title: 'One honest view',
-                desc: 'Work + family + training together. Plan realistically and stop living in spreadsheets.'
-              },
-              {
-                title: 'Published plans',
-                desc: 'After Sunday Prep, publish your week to your calendar. Monday starts with clarity.'
-              },
-              {
-                title: 'Recovery-aware',
-                desc: 'Smart suggestions respect your sleep, nutrition, and rest days.'
-              }
-            ].map((f) => (
-              <div key={f.title} className="p-6 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition">
-                <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
-                <p className="text-sm text-slate-300 leading-relaxed">{f.desc}</p>
+
+          {/* Pricing Cards */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 max-w-5xl">
+            {/* Free Tier */}
+            <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
+              <div className="mb-6">
+                <h3 className="text-2xl font-semibold text-white mb-2">Free</h3>
+                <p className="text-slate-300 text-sm">Everything you need to get started</p>
               </div>
-            ))}
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-white">$0</span>
+                <span className="text-slate-400 text-sm">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  'Unified training + life calendar',
+                  'Sync TrainingPeaks workouts',
+                  'Sync Outlook calendar',
+                  'Basic Sunday Prep ritual',
+                  'Coach-athlete collaboration',
+                  'Manual recovery logging'
+                ].map((feature) => (
+                  <li key={feature} className="flex gap-3 items-start">
+                    <span className="h-5 w-5 rounded-full bg-[#00C2A8]/20 flex items-center justify-center flex-shrink-0 text-xs">
+                      <svg className="w-3 h-3 text-[#00C2A8]" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <span className="text-slate-300">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <button className="px-6 py-3 rounded-lg border border-white/20 text-white hover:bg-white/10 transition w-full">
+                Get Started
+              </button>
+            </div>
+
+            {/* Premium Tier */}
+            <div className="relative p-8 rounded-xl bg-gradient-to-br from-[#FF7A00]/20 to-[#00C2A8]/20 border border-[#FF7A00]/40 flex flex-col ring-1 ring-[#FF7A00]/20">
+              <div className="absolute top-4 right-4 bg-[#FF7A00] text-white text-xs font-bold px-3 py-1 rounded-full">
+                Recommended
+              </div>
+              <div className="mb-6">
+                <h3 className="text-2xl font-semibold text-white mb-2">Premium</h3>
+                <p className="text-slate-300 text-sm">AI-powered planning + advanced insights</p>
+              </div>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-white">$9.99</span>
+                <span className="text-slate-400 text-sm">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  'Everything in Free, plus:',
+                  'AI Coach with intelligent rescheduling',
+                  'Performance metrics (TSS, CTL/ATL, zones)',
+                  'Recovery integration (Oura, Whoop, Apple Health)',
+                  'Advanced analytics & training insights',
+                  'Race planning with taper protocols',
+                  'Overtraining prevention alerts'
+                ].map((feature, idx) => (
+                  <li key={feature} className={`flex gap-3 items-start ${idx === 0 ? 'font-semibold text-[#FF7A00] mb-2' : ''}`}>
+                    {idx > 0 && (
+                      <span className="h-5 w-5 rounded-full bg-[#FF7A00]/20 flex items-center justify-center flex-shrink-0 text-xs">
+                        <svg className="w-3 h-3 text-[#FF7A00]" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                    )}
+                    <span className={idx === 0 ? 'text-slate-300' : 'text-slate-300'}>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <button className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition w-full">
+                Start Free Trial
+              </button>
+            </div>
+          </div>
+
+          {/* Comparison Highlight */}
+          <div className="mt-16 pt-16 border-t border-white/10">
+            <div className="grid gap-6 md:grid-cols-3">
+              {[
+                {
+                  title: 'Free for everyone',
+                  desc: 'Start planning without a credit card. No features locked behind signup walls.'
+                },
+                {
+                  title: 'Coach collaboration included',
+                  desc: 'Coaches connect for free within your subscription. No double-charging couples.'
+                },
+                {
+                  title: 'Export anytime',
+                  desc: 'Your data is yours. Download your calendar and training log at any time.'
+                }
+              ].map((item) => (
+                <div key={item.title} className="text-center">
+                  <h4 className="text-lg font-semibold text-white mb-2">{item.title}</h4>
+                  <p className="text-sm text-slate-300">{item.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

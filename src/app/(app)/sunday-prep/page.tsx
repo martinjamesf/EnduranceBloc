@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
-import { PageHeader } from '@/components'
-import TaskCard from '@/components/Cards/TaskCard'
+import { PageHeader, SleepSettingsModal } from '@/components'
 import TaskEditModal, { TaskEditFormData } from '@/components/Modals/TaskEditModal'
 import GoogleCalendarWidget from '@/components/Integrations/GoogleCalendarWidget'
 import { supabase } from '@/lib/supabaseClient'
@@ -32,6 +31,9 @@ export default function SundayPrep() {
   const [editingTask, setEditingTask] = useState<{ dayIndex: number; task: WorkoutBlock } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [draggedTask, setDraggedTask] = useState<{ dayIndex: number; taskId: string } | null>(null)
+  const [userSleepStart, setUserSleepStart] = useState(22)
+  const [userSleepEnd, setUserSleepEnd] = useState(5)
+  const [sleepSettingsOpen, setSleepSettingsOpen] = useState(false)
 
   // Helpers to compute adjacent weeks
   const getPreviousWeekStart = (d: Date) => new Date(d.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -314,13 +316,22 @@ export default function SundayPrep() {
             </div>
           )}
         </div>
-        <button
-          onClick={handleSaveWeek}
-          disabled={saving}
-          className="px-6 py-2.5 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 disabled:opacity-50 transition whitespace-nowrap"
-        >
-          {saving ? 'Saving...' : 'Save Week'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSleepSettingsOpen(true)}
+            className="px-4 py-2.5 rounded-lg border border-white/20 text-white hover:bg-white/10 transition font-medium text-sm"
+            title="Configure your sleep schedule"
+          >
+            ⚙️ Sleep Settings
+          </button>
+          <button
+            onClick={handleSaveWeek}
+            disabled={saving}
+            className="px-6 py-2.5 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 disabled:opacity-50 transition whitespace-nowrap"
+          >
+            {saving ? 'Saving...' : 'Save Week'}
+          </button>
+        </div>
       </div>
 
       {/* Week Grid */}
@@ -353,12 +364,20 @@ export default function SundayPrep() {
                     onDragStart={() => task.id && handleDragStart(dayIndex, task.id)}
                     className="cursor-grab active:cursor-grabbing"
                   >
-                    <TaskCard
-                      category={task.category}
-                      title={task.title}
-                      subtitle={task.subtitle}
-                      onEdit={() => handleEditTask(dayIndex, task)}
-                    />
+                    <div
+                      onClick={() => handleEditTask(dayIndex, task)}
+                      className="p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 hover:border-white/20 transition-colors cursor-pointer group"
+                    >
+                      <p className="font-semibold text-sm text-white group-hover:text-blue-200 transition-colors">
+                        {task.title}
+                      </p>
+                      {task.subtitle && (
+                        <p className="text-xs text-slate-400 mt-1">{task.subtitle}</p>
+                      )}
+                      <p className="text-[11px] text-slate-500 mt-1.5 capitalize">
+                        {task.category || 'Task'}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -396,6 +415,18 @@ export default function SundayPrep() {
           onDelete={handleDeleteTask}
         />
       )}
+
+      {/* Sleep Settings Modal */}
+      <SleepSettingsModal
+        isOpen={sleepSettingsOpen}
+        onClose={() => setSleepSettingsOpen(false)}
+        sleepStart={userSleepStart}
+        sleepEnd={userSleepEnd}
+        onSave={(newStart, newEnd) => {
+          setUserSleepStart(newStart)
+          setUserSleepEnd(newEnd)
+        }}
+      />
     </div>
   )
 }

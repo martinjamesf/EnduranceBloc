@@ -1,12 +1,26 @@
-import { Workout } from '../types'
+import { Workout, AIInsight } from '../types'
 
-export function suggestTimesForWorkout(workout: Workout) {
+export function suggestTimesForWorkout(workout: Workout, profileId: string): AIInsight {
   // Simple mock: suggest the workout at 6 AM or 5 PM based on type
+  let suggestion: string
+  let time: string
+  
   if (workout.type === 'swim') {
-    return [{ time: '06:00', reason: 'Pools open / cooler water' }]
+    suggestion = 'Pools open / cooler water'
+    time = '06:00'
+  } else if (workout.type === 'bike') {
+    suggestion = 'Good road visibility'
+    time = '17:30'
+  } else {
+    suggestion = 'Evening availability'
+    time = '18:00'
   }
-  if (workout.type === 'bike') {
-    return [{ time: '17:30', reason: 'Good road visibility' }]
+
+  return {
+    id: '', // Will be assigned by database
+    profileId,
+    workoutId: workout.id,
+    suggestion: `Suggested time: ${time} - ${suggestion}`,
+    score: 0.85
   }
-  return [{ time: '18:00', reason: 'Evening availability' }]
 }

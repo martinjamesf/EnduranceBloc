@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import { usePageAnalytics } from "@/lib/analytics/usePageAnalytics"
-import Input from "../../../components/Inputs/Input"
 import Link from "next/link"
 import { supabase } from "../../../lib/supabaseClient"
 import { useRouter } from "next/navigation"
@@ -81,7 +80,7 @@ export default function SignupPage() {
               <label htmlFor="fullName" className="block text-sm font-medium text-slate-700 mb-1.5">
                 Full name
               </label>
-              <Input
+              <input
                 id="fullName"
                 type="text"
                 value={fullName}
@@ -106,7 +105,7 @@ export default function SignupPage() {
               <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
                 Email address
               </label>
-              <Input
+              <input
                 id="email"
                 type="email"
                 value={email}
@@ -131,7 +130,7 @@ export default function SignupPage() {
               <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
                 Password
               </label>
-              <Input
+              <input
                 id="password"
                 type="password"
                 value={password}

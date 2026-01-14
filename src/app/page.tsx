@@ -85,9 +85,9 @@ export default function Home() {
               Finally, a calendar that treats work meetings, family time, and race prep as equals. See everything in one view, plan realistically, and stop living in spreadsheets.
             </p>
 
-            <div className="mt-6 w-full max-w-md">
+            <div className="mt-6 w-full max-w-md" suppressHydrationWarning>
               <p className="text-sm uppercase tracking-[0.18em] text-slate-400 mb-4">Be the first to know when we launch</p>
-              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3" suppressHydrationWarning>
                 <input
                   type="email"
                   placeholder="Enter your email"
@@ -101,6 +101,7 @@ export default function Home() {
                   type="submit"
                   disabled={loading}
                   className="px-6 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition whitespace-nowrap disabled:opacity-50 cursor-pointer"
+                  suppressHydrationWarning
                 >
                   {loading ? 'Joining...' : 'Join Waitlist'}
                 </button>

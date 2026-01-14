@@ -142,7 +142,9 @@ export function DraggableEvent({
   }, [isResizing, handleResizeMouseMove, handleResizeMouseUp])
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging 
+      ? `scale(1.02) ${CSS.Transform.toString(transform)}` 
+      : CSS.Transform.toString(transform),
     transition: isResizing ? 'none' : transition,
     opacity: isDragging ? 0.5 : 1,
   }
@@ -165,13 +167,14 @@ export function DraggableEvent({
       }}
       style={{
         backgroundColor: colors.bg,
-        borderLeft: `3px solid ${colors.border}`,
+        borderLeft: `4px solid ${colors.border}`,
         color: colors.text,
+        boxShadow: isDragging ? '0 20px 25px -5px rgba(0, 0, 0, 0.3)' : undefined,
         ...style,
       }}
-      className={`h-full rounded-sm p-1 cursor-grab active:cursor-grabbing ${
+      className={`h-full rounded p-1.5 cursor-grab active:cursor-grabbing ${
         isDayView ? 'text-sm' : 'text-[10px] md:text-xs'
-      } ${isDragging ? 'shadow-lg z-50 opacity-50' : ''} overflow-hidden hover:shadow-md transition-shadow relative group`}
+      } ${isDragging ? 'shadow-lg z-50 opacity-70 ring-2 ring-offset-1' : 'hover:shadow-md'} transition-all duration-150 overflow-hidden relative group`}
       {...attributes}
       {...listeners}
       onClick={handleEventClick}

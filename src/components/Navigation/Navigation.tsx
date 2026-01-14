@@ -73,7 +73,7 @@ export default function Navigation() {
 
         {/* Navigation items */}
         <div className="flex items-center gap-3">
-          <Link href="/product" className="hidden px-3 py-2 text-white/80 hover:text-white md:inline-flex">Product Overview</Link>
+          <Link href="/product" className="px-2 md:px-3 py-2 text-xs md:text-sm text-white/80 hover:text-white transition">Product</Link>
           {!isHome && !isProductPage && (
             <>
               <Link href="/sunday-prep" className="hidden px-3 py-2 text-white/80 hover:text-white md:inline-flex">Sunday Prep</Link>

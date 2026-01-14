@@ -15,7 +15,7 @@ EnduranceBloc is a Next.js-based smart weekly planning app for endurance athlete
 ### Data Model (Core Types in `src/lib/types.ts`)
 - **Workout:** fitness activities (swim/bike/run/other) with ISO timestamp, linked to TrainingPeaks or imported directly
 - **Block:** time blocks (work, family, sleep, custom) with start/end times on the weekly grid
-- **AIInsight:** AI-generated suggestions tied to workouts or profiles
+- **AIInsight:** AI-generated suggestions tied to workouts or profiles, with `profileId` for RLS enforcement
 - **Profile:** athlete identity, timezone, email (Supabase Auth user)
 
 ### Data Flow
@@ -114,15 +114,17 @@ Create `.env.local` (see `.env.local.example`):
 - Example pattern: `supabase.from('workouts').insert(workouts).select()`
 
 ### AI Integration
-- Mock suggestions available in `src/lib/ai/mockSuggestions.ts`
+- Mock suggestions available in `src/lib/ai/mockSuggestions.ts` with `suggestTimesForWorkout(workout, profileId)` function
+- Returns `AIInsight` objects with user ownership via `profileId` for RLS enforcement
 - Ready for LLM integration; placeholder for future OpenAI/Anthropic calls
-- Suggestions tied to workout IDs or generated for time slots
+- When creating insights, always include `profileId` to enable row-level security
 
 ### Missing / In-Progress
 - Token refresh logic for OAuth (access tokens expire; need refresh flow)
 - Database upsert logic in `syncService.ts` (TODOs marked)
 - Real LLM calls for AI suggestions (currently mock data)
 - Mobile UI optimizations (marked as roadmap item)
+- Service role queries for insights (some parts need to pass `profileId` from auth context)
 
 ## File Reference Map
 - **Core Types:** `src/lib/types.ts`

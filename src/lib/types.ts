@@ -20,6 +20,7 @@ export interface Block {
 
 export interface AIInsight {
   id: string
+  profileId: string
   workoutId?: string
   suggestion: string
   score?: number

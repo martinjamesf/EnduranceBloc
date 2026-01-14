@@ -25,18 +25,18 @@ function getEventColor(event: CalendarEvent): { bg: string; border: string; text
   if (event.type === 'workout') {
     switch (event.workoutType) {
       case 'swim':
-        return { bg: '#cce5ff', border: '#0077FF', text: '#004799' }
+        return { bg: '#dbeafe', border: '#0077FF', text: '#0c2340' }
       case 'bike':
-        return { bg: '#fff4e0', border: '#F2C94C', text: '#684d08' }
+        return { bg: '#fef3c7', border: '#F2C94C', text: '#78350f' }
       case 'run':
-        return { bg: '#ffcccc', border: '#EB5757', text: '#be1a1a' }
+        return { bg: '#fee2e2', border: '#EB5757', text: '#7c2d12' }
       default:
-        return { bg: '#d4f4f0', border: '#55d28f', text: '#3ba86e' }
+        return { bg: '#ccfbf1', border: '#00C2A8', text: '#134e4a' }
     }
   } else if (event.type === 'google') {
-    return { bg: '#e8eeff', border: '#3849e0', text: '#2937b5' }
+    return { bg: '#e0e7ff', border: '#3849e0', text: '#1e1b4b' }
   }
-  return { bg: '#bdffdb', border: '#8fdcb2', text: '#2c5a41' }
+  return { bg: '#d1fae5', border: '#00C2A8', text: '#065f46' }
 }
 
 interface WeekDay {
@@ -127,6 +127,9 @@ function MultiDayGrid({
   onResizeStart,
   onResize,
   onResizeEnd,
+  sleepCollapsed,
+  onToggleSleep,
+  userSleepStart,
 }: {
   days: WeekDay[]
   timeSlots: Array<{ hour: number; minute: number; isSleepTime: boolean }>
@@ -135,6 +138,9 @@ function MultiDayGrid({
   onResizeStart: (event: CalendarEvent, edge: 'top' | 'bottom') => void
   onResize: (event: CalendarEvent, newStart: string, newEnd: string) => void
   onResizeEnd: () => void
+  sleepCollapsed: boolean
+  onToggleSleep: () => void
+  userSleepStart: number
 }) {
   const getEventHeight = (event: CalendarEvent, isSleepTime: boolean) => {
     const start = new Date(event.start)
@@ -163,8 +169,27 @@ function MultiDayGrid({
     <>
       {/* Day headers */}
       <div className="border-b border-[#dadce0] overflow-x-auto">
-        <div className="flex min-w-[1040px]">
-          <div className="w-12 md:w-16 flex-shrink-0" />
+        <div className="flex min-w-[1040px] items-center">
+          <div className="w-12 md:w-16 flex-shrink-0 flex items-center justify-center px-2">
+            {!sleepCollapsed && (
+              <button
+                onClick={onToggleSleep}
+                className="text-xs font-medium text-gray-500 hover:text-gray-700 transition cursor-pointer py-1"
+                title="Hide sleep times"
+              >
+                ↓ Sleep
+              </button>
+            )}
+            {sleepCollapsed && (
+              <button
+                onClick={onToggleSleep}
+                className="text-xs font-medium text-gray-500 hover:text-gray-700 transition cursor-pointer py-1"
+                title="Show sleep times"
+              >
+                ↑ Sleep
+              </button>
+            )}
+          </div>
           {days.map(day => (
             <div
               key={day.date.toISOString()}
@@ -182,16 +207,22 @@ function MultiDayGrid({
       <div className="flex-1 overflow-auto">
         <div className="flex min-w-[1040px]">
           {/* Time labels */}
-          <div className="w-12 md:w-16 flex-shrink-0 border-r border-[#dadce0] py-2">
-            {timeSlots.map(slot => {
+          <div className="w-12 md:w-16 flex-shrink-0 border-r border-gray-200 py-2">
+            {timeSlots.map((slot, idx) => {
               const slotHeight = slot.isSleepTime ? 'h-3 md:h-4' : 'h-4 md:h-5'
+              const isSleepSection = slot.isSleepTime && idx > 0 && !timeSlots[idx - 1].isSleepTime
               return (
                 <div
                   key={`${slot.hour}-${slot.minute}`}
-                  className={`${slotHeight} flex items-start justify-center px-1 md:px-2`}
+                  className={`${slotHeight} flex items-start justify-center px-1 md:px-2 relative group`}
                 >
+                  {isSleepSection && (
+                    <div className="absolute -top-4 left-0 right-0 h-4 flex items-center justify-center border-t-2 border-gray-400">
+                      <span className="text-[9px] font-semibold text-gray-400 bg-white px-1">SLEEP</span>
+                    </div>
+                  )}
                   {slot.minute === 0 && (
-                    <span className="text-[11px] md:text-xs font-medium text-[#333]">
+                    <span className={`text-[11px] md:text-xs font-medium ${slot.isSleepTime ? 'text-gray-400' : 'text-gray-700'}`}>
                       {slot.hour.toString().padStart(2, '0')}:00
                     </span>
                   )}
@@ -307,8 +338,9 @@ function CalendarContent() {
   } = useCalendarEvents(setEvents, setModalOpen, setSelectedEvent, setLoading)
 
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
-
-  // Configure drag sensors
+  const [sleepCollapsed, setSleepCollapsed] = React.useState(false)
+  const [userSleepStart, setUserSleepStart] = React.useState(22)
+  const [userSleepEnd, setUserSleepEnd] = React.useState(5)
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor))
 
   // Calculate date range based on view
@@ -367,18 +399,29 @@ function CalendarContent() {
     if (view === 'day') return []
     
     const slots: Array<{ hour: number; minute: number; isSleepTime: boolean }> = []
-    for (let hour = 0; hour < 24; hour++) {
-      const isSleepTime = hour >= 22 || hour < 5
-      if (isSleepTime) {
-        slots.push({ hour, minute: 0, isSleepTime: true })
-      } else {
-        for (let quarter = 0; quarter < 4; quarter++) {
-          slots.push({ hour, minute: quarter * 15, isSleepTime: false })
-        }
+    
+    // Add waking hours first (e.g., 05:00-22:00)
+    const wakenHourStart = userSleepEnd // 5 or user-configured
+    const sleepHourStart = userSleepStart // 22 or user-configured
+    
+    for (let hour = wakenHourStart; hour < sleepHourStart; hour++) {
+      for (let quarter = 0; quarter < 4; quarter++) {
+        slots.push({ hour, minute: quarter * 15, isSleepTime: false })
       }
     }
+    
+    // Add sleep hours at the bottom (collapsed by default)
+    if (!sleepCollapsed) {
+      for (let hour = sleepHourStart; hour < 24; hour++) {
+        slots.push({ hour, minute: 0, isSleepTime: true })
+      }
+      for (let hour = 0; hour < wakenHourStart; hour++) {
+        slots.push({ hour, minute: 0, isSleepTime: true })
+      }
+    }
+    
     return slots
-  }, [view])
+  }, [view, sleepCollapsed, userSleepStart, userSleepEnd])
 
   const handleAddEvent = (date: string, hour: number, minute: number = 0) => {
     setSelectedDate(date)
@@ -492,6 +535,9 @@ function CalendarContent() {
             onResizeStart={handleResizeStart}
             onResize={handleResize}
             onResizeEnd={() => handleResizeEnd(events)}
+            sleepCollapsed={sleepCollapsed}
+            onToggleSleep={() => setSleepCollapsed(!sleepCollapsed)}
+            userSleepStart={userSleepStart}
           />
         )}
 
@@ -511,6 +557,7 @@ function CalendarContent() {
           }
           onDelete={onDeleteEvent}
         />
+
       </div>
     </DndContext>
   )

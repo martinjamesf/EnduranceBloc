@@ -67,9 +67,8 @@ export default function Navigation() {
           aria-label="Back to home"
           className="flex items-center gap-3 text-white hover:opacity-90 transition"
         >
-          <Logo className="h-6" />
-          <span className="hidden text-xs uppercase tracking-[0.25em] text-white/60 md:inline">Plan smarter every week</span>
-        </Link>
+          <Logo size="Sm" style="White" tagline="False" />
+       </Link>
 
         {/* Navigation items */}
         <div className="flex items-center gap-3">

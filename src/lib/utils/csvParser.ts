@@ -15,12 +15,22 @@ interface CSVRow {
  * Note: profile_id will be added during database insertion
  */
 export function parseTrainingPeaksCSV(csvText: string): Workout[] {
-  const lines = csvText.trim().split('\n')
+  const lines = csvText.trim().split(/\r?\n/)
   if (lines.length < 2) {
     throw new Error('CSV file is empty or invalid')
   }
 
   const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
+
+  const hasDateHeader = headers.some(h => h === 'Workout Date' || h === 'Date')
+  const hasNameHeader = headers.some(h => h === 'Workout Name' || h === 'Name' || h === 'Title')
+
+  if (!hasDateHeader || !hasNameHeader) {
+    throw new Error(
+      'File is not a TrainingPeaks workout CSV. Export using "CSV" (not the GZIP FIT export) and try again.'
+    )
+  }
+
   const workouts: Workout[] = []
 
   for (let i = 1; i < lines.length; i++) {

@@ -27,8 +27,23 @@ export default function CSVImportModal({
     const selectedFile = e.target.files?.[0]
     if (!selectedFile) return
 
-    if (!selectedFile.name.endsWith('.csv')) {
-      setError('Please select a CSV file')
+    const fileName = selectedFile.name
+    const isFIT = /\.fit(\.(gz|gzip))?$/i.test(fileName)
+    const isCSV = /\.csv$/i.test(fileName)
+    const isCSVGzip = /\.csv\.(gz|gzip)$/i.test(fileName)
+    const isGZIP = isCSVGzip
+
+    if (isFIT) {
+      setFile(null)
+      setPreview([])
+      setError('TrainingPeaks "GZIP Export" downloads FIT files. Please re-export using the CSV format and try again.')
+      return
+    }
+
+    if (!isCSV && !isCSVGzip) {
+      setFile(null)
+      setPreview([])
+      setError('Please select a TrainingPeaks CSV file (.csv or .csv.gz). The GZIP FIT export is not supported.')
       return
     }
 
@@ -36,18 +51,45 @@ export default function CSVImportModal({
     setError(null)
 
     try {
-      const text = await selectedFile.text()
+      let text: string
+
+      if (isGZIP) {
+        // Decompress GZIP file
+        const arrayBuffer = await selectedFile.arrayBuffer()
+        const decompressed = await decompressGZIP(arrayBuffer)
+        text = new TextDecoder().decode(decompressed)
+      } else {
+        text = await selectedFile.text()
+      }
+
       const workouts = parseTrainingPeaksCSV(text)
       
       if (workouts.length === 0) {
-        setError('No valid workouts found in CSV')
+        setError('No valid workouts found in file')
         return
       }
 
       setPreview(workouts)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse CSV')
+      setError(err instanceof Error ? err.message : 'Failed to parse file')
       setPreview([])
+    }
+  }
+
+  // Decompress GZIP using native browser DecompressionStream API
+  const decompressGZIP = async (buffer: ArrayBuffer): Promise<Uint8Array> => {
+    try {
+      const stream = new Response(buffer).body
+      if (!stream) throw new Error('Failed to create stream')
+      
+      const decompressedStream = stream.pipeThrough(
+        new DecompressionStream('gzip')
+      )
+      const decompressedResponse = new Response(decompressedStream)
+      const decompressedBuffer = await decompressedResponse.arrayBuffer()
+      return new Uint8Array(decompressedBuffer)
+    } catch (err) {
+      throw new Error('Failed to decompress GZIP file. Make sure the file is a valid GZIP archive.')
     }
   }
 
@@ -82,7 +124,7 @@ export default function CSVImportModal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">📊 Import TrainingPeaks CSV</h2>
+            <h2 className="text-xl font-bold text-white">📊 Import TrainingPeaks Workouts</h2>
             <button
               onClick={onClose}
               className="text-slate-400 hover:text-white transition"
@@ -99,10 +141,11 @@ export default function CSVImportModal({
             <h3 className="font-semibold text-blue-300 mb-2">How to export from TrainingPeaks:</h3>
             <ol className="text-sm text-blue-200/80 space-y-1 list-decimal list-inside">
               <li>Go to TrainingPeaks.com → Calendar view</li>
-              <li>Select the week you want to export</li>
               <li>Click "More" → "Export Workouts"</li>
-              <li>Choose CSV format and download</li>
-              <li>Upload the file here</li>
+              <li>Set date range (From/To dates)</li>
+              <li>Select Format: <strong className="text-blue-200">CSV</strong> (not <span className="text-blue-200">GZIP Export</span>, which downloads FIT files)</li>
+              <li>Click Export and download the CSV</li>
+              <li>Upload the .csv (or .csv.gz) file here</li>
             </ol>
           </div>
 
@@ -122,7 +165,7 @@ export default function CSVImportModal({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".csv"
+              accept=".csv,.csv.gz,.csv.gzip,.gz,.gzip"
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -132,10 +175,10 @@ export default function CSVImportModal({
             >
               <div className="text-4xl mb-2">📁</div>
               <p className="text-white font-medium">
-                {file ? file.name : 'Click to select CSV file'}
+                {file ? file.name : 'Click to select TrainingPeaks CSV'}
               </p>
               <p className="text-sm text-slate-400 mt-1">
-                or drag and drop
+                Use CSV export (.csv or .csv.gz). GZIP export downloads FIT files and is not supported.
               </p>
             </button>
           </div>

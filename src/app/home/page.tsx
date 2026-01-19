@@ -3,30 +3,30 @@
 const features = [
   {
     title: 'Life-first weekly planner',
-    description: 'See work meetings, family time, and training in one view. Drag workouts into open windows without conflicts.',
-    highlight: 'Work + family + training in one place'
+    description: 'See non-negotiable events in one view. No more juggling multiple calendars or guessing where workouts fit.',
+    highlight: 'Consolidate calendars'
   },
   {
     title: 'Sunday Prep ritual',
-    description: 'A 15-minute guided flow to review commitments, slot workouts, and lock in your week before Monday hits.',
-    highlight: 'Plan your week in 15 minutes, not 2 hours'
+    description: 'A guided flow to review commitments, slot workouts, and lock in your week before Monday hits.',
+    highlight: 'Reduce planning times'
   },
   {
-    title: 'Smart scheduling suggestions',
+    title: 'AI-powered analysis',
     description: 'Get workout time suggestions based on your calendar patterns, recovery needs, and life commitments.',
-    highlight: 'AI finds time you didn\'t know you had'
+    highlight: 'Get smart suggestions'
   }
 ]
 
 const integrations = [
   {
-    name: 'TrainingPeaks',
-    detail: 'Pull structured workouts instantly and keep them synced as coaches update the plan.',
+    name: 'Training Platforms',
+    detail: 'Import structured workouts from your preferred service and sync them to EnduranceBloc. Instantly visualize your committed sessions alongside life events and adjust your training schedule as needed.',
     accent: 'bg-[#0D1D35] text-white'
   },
   {
-    name: 'Outlook Calendar',
-    detail: 'See meetings and events next to your training so you never double-book your legs.',
+    name: 'Calendar Platforms',
+    detail: 'Connect your personal or work calendar to see meetings and commitments alongside your training. Eliminate scheduling conflicts and never overlap your workouts with important events.',
     accent: 'bg-[#FF7A00] text-white'
   }
 ]
@@ -76,12 +76,12 @@ export default function Home() {
               >
                 Start your free 14-day trial
               </Link>
-              <span className="text-sm text-white/70">No credit card ΓÇó Cancel anytime</span>
+              <span className="text-sm text-white/70">No credit card needed.</span>
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-white/70">
-              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10">Γ£ô Work + life + training in one view</span>
-              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10">Γ£ô 15-minute Sunday planning ritual</span>
-              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10">Γ£ô Auto-sync with TrainingPeaks & Outlook</span>
+              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10">15-minute Sunday planning ritual</span>
+              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10">Sync existing schedules in one view</span>
+              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10">Smart scheduling to predict success</span>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function Home() {
               <p className="text-sm uppercase tracking-[0.18em] text-slate-500">For busy athletes with full lives</p>
               <h2 className="text-3xl md:text-4xl font-semibold text-slate-900">Stop treating training like it exists in a vacuum.</h2>
               <p className="text-lg text-slate-700 max-w-2xl">
-                You're not just an athleteΓÇöyou're a parent, a professional, a partner. EnduranceBloc is the only planner that treats your job, your family, and your training as equal priorities in one honest weekly view.
+                You're not just an athlete, you're a parent, a professional, a partner. EnduranceBloc treats your job, your family, and your training as equal priorities in one honest weekly view.
               </p>
               <div className="grid gap-4 md:grid-cols-2">
                 {features.map(feature => (
@@ -171,12 +171,12 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-14 md:py-18">
           <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr] items-center">
             <div className="space-y-4">
-              <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Built for parents, professionals, and athletes</p>
+              <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Built for working parent athletes</p>
               <h2 className="text-3xl md:text-4xl font-semibold text-slate-900">Train around your life, not despite it.</h2>
               <ul className="space-y-3 text-slate-700">
-                <li className="flex gap-3 items-start"><span className="mt-1 h-2 w-2 rounded-full bg-[#00C2A8]" aria-hidden /><span>Smart scheduling respects work meetings, school pickups, and family dinnersΓÇösuggests workouts that actually fit.</span></li>
+                <li className="flex gap-3 items-start"><span className="mt-1 h-2 w-2 rounded-full bg-[#00C2A8]" aria-hidden /><span>Smart scheduling respects work meetings, school pickups, and family dinners &amp; suggests workouts that actually fit.</span></li>
                 <li className="flex gap-3 items-start"><span className="mt-1 h-2 w-2 rounded-full bg-[#FF7A00]" aria-hidden /><span>See your entire week at a glance with color-coded swim/bike/run blocks alongside life commitments.</span></li>
-                <li className="flex gap-3 items-start"><span className="mt-1 h-2 w-2 rounded-full bg-[#0D1D35]" aria-hidden /><span>Real-time sync keeps coach updates, calendar changes, and your plan alignedΓÇöno manual transfers.</span></li>
+                <li className="flex gap-3 items-start"><span className="mt-1 h-2 w-2 rounded-full bg-[#0D1D35]" aria-hidden /><span>Real-time sync keeps coach updates, calendar changes, and your plan aligned &amp; manual transfers.</span></li>
               </ul>
               <div className="flex gap-4 pt-2">
                 <Link href="/signup" className="px-5 py-3 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90">Start your free trial</Link>

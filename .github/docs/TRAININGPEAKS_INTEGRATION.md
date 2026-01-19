@@ -2,7 +2,62 @@
 
 ## Overview
 
-EnduranceBloc now integrates with TrainingPeaks to automatically sync your upcoming workouts for Sunday Prep planning. When you open Sunday Prep, you can sync your next week's TrainingPeaks workouts (Monday-Sunday) with a single click, and view them alongside your performance metrics.
+EnduranceBloc integrates with TrainingPeaks to automatically sync your upcoming workouts for Sunday Prep planning. When you open Sunday Prep, you can sync your next week's TrainingPeaks workouts (Monday-Sunday) with a single click, and view them alongside your performance metrics.
+
+## Quick Reference
+
+### 🚀 Quick Start
+
+**Environment Setup:**
+```bash
+# .env.local
+TRAININGPEAKS_CLIENT_ID=your_client_id
+TRAININGPEAKS_CLIENT_SECRET=your_client_secret
+TRAININGPEAKS_REDIRECT_URI=http://localhost:3000/api/trainingpeaks/callback
+```
+
+**Get TP Credentials:**
+1. Go to https://api.trainingpeaks.com/
+2. Register for OAuth client
+3. Get Client ID & Secret
+4. Set Redirect URI to `http://localhost:3000/api/trainingpeaks/callback`
+
+**Test Connection:**
+- User connects account at Settings → Integrations → TrainingPeaks
+- Tokens stored in `users` table automatically
+- Ready to sync!
+
+### 🎯 Core Endpoints
+
+| Route | Method | Purpose | Auth |
+|-------|--------|---------|------|
+| `/api/trainingpeaks/connect` | GET | Redirect to TP OAuth | No |
+| `/api/trainingpeaks/callback` | GET | Handle TP redirect | No |
+| `/api/trainingpeaks/sync` | POST | Sync next week workouts | Yes (Supabase) |
+
+### ✨ Key Features
+
+**OAuth 2.0 Integration:**
+- Secure connection to TrainingPeaks account
+- Automatic token refresh
+- Server-side authentication
+
+**Next Week Sync:**
+- One-click sync button in Sunday Prep
+- Automatically calculates Monday-Sunday of next week
+- Smart date range: Mon 00:00 UTC → Sun 23:59 UTC
+
+**Performance Metrics:**
+- Display Training Stress Score (TSS)
+- Show distance, average & max power
+- Display average & max heart rate
+- Beautiful card layout with sport-specific colors
+
+**Smart Sync:**
+- Automatic duplicate detection
+- No data loss - updates on subsequent syncs
+- Works seamlessly with existing workouts
+- Proper error handling
 
 ## Features
 

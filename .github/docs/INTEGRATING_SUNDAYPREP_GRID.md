@@ -2,6 +2,51 @@
 
 This guide explains how to integrate the redesigned `SundayPrepGrid` component into the full Sunday Prep page and other parts of the application.
 
+## Component Overview
+
+The `SundayPrepGrid` component has been redesigned with a focus on **accessibility, usability, and proper handling of complex time blocks**. 
+
+### Key Improvements ✅
+
+**1. Cross-Midnight Time Block Support**
+- Sleep blocks spanning from 10 PM to 6 AM (crossing midnight) now work correctly
+- Added `crossesMidnight` boolean flag to `BlockData` interface
+- UI displays "next day" label when a block crosses midnight
+- Example: `{ startTime: '22:00', endTime: '06:00', crossesMidnight: true }` → "10:00 PM – next day 6:00 AM"
+
+**2. Fixed vs. Editable Blocks**
+- Added `isFixed` boolean to mark non-customizable blocks (meals, breaks, sleep)
+- Visual differentiation: 70% opacity, dashed border, "Fixed" label
+- No hover effects or click handlers for fixed blocks
+- `role="status"` for screen readers (not button)
+
+**3. WCAG 2.1 Accessibility Compliance**
+- **Keyboard Navigation**: Tab through blocks, Enter/Space to activate
+- **Screen Reader Support**: Comprehensive ARIA labels with time, duration, status
+- **Focus Indicators**: Clear 2px focus ring
+- **Color Contrast**: All text meets 4.5:1 ratio minimum
+- **Semantic HTML**: Proper roles (`region`, `columnheader`, `button`, `status`)
+
+**4. Enhanced Visual Design**
+- **Category Icons**: ⚡ Workout, 💼 Work, 👥 Life, 🍽️ Meal, ☕ Break, 😴 Sleep, 📋 Prep
+- **Improved Colors**: Updated palette with better contrast ratios
+- **Time Format**: 12-hour AM/PM format for readability
+- **Duration Display**: Shows block length in hours for planning context
+
+**5. TypeScript Interface**
+```typescript
+export interface BlockData {
+  id: string
+  title: string
+  category: BlockCategory // 'workout' | 'work' | 'life' | 'meal' | 'break' | 'sleep' | 'prep'
+  startTime: string // HH:MM (24-hour)
+  endTime: string // HH:MM (24-hour)
+  isFixed?: boolean // Non-editable blocks
+  crossesMidnight?: boolean // Time span crosses midnight
+  description?: string
+}
+```
+
 ## Architecture Overview
 
 ```

@@ -26,25 +26,35 @@ export async function createTask(
   task: Omit<WorkoutBlock, 'id' | 'profile_id' | 'created_at' | 'updated_at'>
 ): Promise<WorkoutBlock> {
   try {
+    const payload = {
+      profile_id: profileId,
+      day_of_week: dayOfWeek,
+      category: task.category,
+      title: task.title,
+      subtitle: task.subtitle || null,
+      notes: task.notes || null,
+      start: task.start || null,
+      end: task.end || null
+    }
+
     const { data, error } = await supabase
       .from('blocks')
-      .insert({
-        profile_id: profileId,
-        day_of_week: dayOfWeek,
-        category: task.category,
-        title: task.title,
-        subtitle: task.subtitle,
-        notes: task.notes,
-        start: task.start,
-        end: task.end
-      })
+      .insert(payload)
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase insert error:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        payload
+      })
+      throw new Error(`Failed to create task: ${error.message}`)
+    }
     return data
   } catch (err) {
-    console.error('Failed to create task:', err)
+    console.error('Failed to create task:', err instanceof Error ? err.message : err)
     throw err
   }
 }
@@ -88,37 +98,32 @@ export async function loadWeekPlan(
   weekStart: Date
 ): Promise<DayBlock[]> {
   try {
-    // Get all 7 days of the week starting from Monday
-    const tasks: WorkoutBlock[] = []
-    
-    for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(weekStart)
-      dayDate.setDate(dayDate.getDate() + i)
-      const dayOfWeek = dayDate.getDay() || 7 // Convert Sunday (0) to 7
-      
-      const { data, error } = await supabase
-        .from('blocks')
-        .select('*')
-        .eq('profile_id', profileId)
-        .eq('day_of_week', dayOfWeek)
+    // OPTIMIZED: Single query to get all blocks for all days at once
+    const { data, error } = await supabase
+      .from('blocks')
+      .select('*')
+      .eq('profile_id', profileId)
+      .in('day_of_week', [1, 2, 3, 4, 5, 6, 7])
+      .order('start', { ascending: true })
 
-      if (error) console.error('Error loading day:', error)
-      if (data) tasks.push(...data)
+    if (error) {
+      console.error('Error loading blocks:', error.message || error)
+      throw error
     }
+
+    const tasks = (data || []) as WorkoutBlock[]
 
     // Group by day
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     const dayBlocks: DayBlock[] = dayNames.map((day, i) => ({
       day,
       dayOfWeek: i + 1,
-      tasks: tasks.filter(t => t.day_of_week === (i + 1)).sort((a, b) => 
-        (a.start || '').localeCompare(b.start || '')
-      )
+      tasks: tasks.filter(t => t.day_of_week === (i + 1))
     }))
 
     return dayBlocks
   } catch (err) {
-    console.error('Failed to load week plan:', err)
+    console.error('Failed to load week plan:', err instanceof Error ? err.message : err)
     throw err
   }
 }
@@ -152,9 +157,16 @@ export async function saveWeekPlan(
       .from('blocks')
       .upsert(allTasks, { onConflict: 'id' })
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase upsert error:', {
+        message: error.message,
+        code: error.code,
+        details: error.details
+      })
+      throw new Error(`Failed to save week plan: ${error.message}`)
+    }
   } catch (err) {
-    console.error('Failed to save week plan:', err)
+    console.error('Failed to save week plan:', err instanceof Error ? err.message : err)
     throw err
   }
 }

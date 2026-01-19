@@ -17,3 +17,6 @@ export { QuickApplyDrawer } from './BlockEditor/QuickApplyDrawer'
 // Calendar DnD Components
 export { DraggableEvent } from './Calendar/DraggableEvent'
 export { DroppableTimeSlot } from './Calendar/DroppableTimeSlot'
+
+// AI Components
+export { AISuggestionsPanel } from './AI/AISuggestionsPanel'

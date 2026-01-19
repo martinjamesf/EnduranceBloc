@@ -1,11 +1,19 @@
-// Placeholder Supabase client setup
+// Supabase client setup with configuration guard
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co'
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-	console.warn('Supabase client env vars missing; using placeholder credentials for build-time only')
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey)
+
+if (!isSupabaseConfigured) {
+	// In dev, make this very obvious so pages can handle gracefully
+	console.warn(
+		'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.'
+	)
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Create a client only if configured; otherwise create a no-op client that will throw on use
+export const supabase = isSupabaseConfigured
+	? createClient(supabaseUrl as string, supabaseKey as string)
+	: createClient('https://invalid.supabase.local', 'invalid')

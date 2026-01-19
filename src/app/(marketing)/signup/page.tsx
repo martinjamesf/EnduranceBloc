@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { usePageAnalytics } from "@/lib/analytics/usePageAnalytics"
 import Link from "next/link"
-import { supabase } from "../../../lib/supabaseClient"
+import { supabase, isSupabaseConfigured } from "../../../lib/supabaseClient"
 import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
@@ -36,6 +36,13 @@ export default function SignupPage() {
     setError(null)
 
     if (!validate()) return
+
+    if (!isSupabaseConfigured) {
+      setError(
+        'Signup is temporarily unavailable: Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local and restart the dev server.'
+      )
+      return
+    }
 
     setLoading(true)
 
@@ -74,6 +81,15 @@ export default function SignupPage() {
             <h1 className="text-3xl font-bold text-[#0D1D35] mb-2">Create your account</h1>
             <p className="text-slate-600">Start planning your training schedule</p>
           </div>
+
+          {!isSupabaseConfigured && (
+            <div className="mb-5 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-800">
+                ⚠️ Supabase is not configured. Please set <span className="font-semibold">NEXT_PUBLIC_SUPABASE_URL</span> and
+                <span className="font-semibold"> NEXT_PUBLIC_SUPABASE_ANON_KEY</span> in your <span className="font-mono">.env.local</span> and restart the dev server.
+              </p>
+            </div>
+          )}
 
           <form className="space-y-5" onSubmit={onSubmit}>
             <div>
@@ -182,7 +198,7 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isSupabaseConfigured}
               className="w-full h-12 bg-[#0D1D35] hover:bg-[#1a2f4a] text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#0D1D35] focus:ring-offset-2"
             >
               {loading ? (

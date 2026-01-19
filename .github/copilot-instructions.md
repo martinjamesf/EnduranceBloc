@@ -114,22 +114,30 @@ Create `.env.local` (see `.env.local.example`):
 - Example pattern: `supabase.from('workouts').insert(workouts).select()`
 
 ### AI Integration
-- Mock suggestions available in `src/lib/ai/mockSuggestions.ts` with `suggestTimesForWorkout(workout, profileId)` function
+- **Full LLM service** available in `src/lib/ai/llmService.ts` with `generateWeeklyPlanSuggestions()` for comprehensive weekly planning
+- **API endpoint** at `/api/ai/suggestions` handles authenticated requests and saves insights to database
+- **React hook** `useAISuggestions()` in `src/lib/hooks/useAISuggestions.ts` for easy integration in components
+- **UI component** `AISuggestionsPanel` in `src/components/AI/AISuggestionsPanel.tsx` displays suggestions with apply actions
+- Supports **OpenAI GPT-4** (recommended), **Anthropic Claude**, or **mock mode** (no API key required)
 - Returns `AIInsight` objects with user ownership via `profileId` for RLS enforcement
-- Ready for LLM integration; placeholder for future OpenAI/Anthropic calls
 - When creating insights, always include `profileId` to enable row-level security
+- **Configuration:** Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` in `.env.local` (see `.env.local.example`)
+- **Documentation:** See `.github/docs/AI_INTEGRATION.md` for setup guide and `.github/docs/TESTING_AI.md` for testing
+- Legacy mock function `suggestTimesForWorkout()` in `src/lib/ai/mockSuggestions.ts` still available for simple use cases
 
 ### Missing / In-Progress
 - Token refresh logic for OAuth (access tokens expire; need refresh flow)
 - Database upsert logic in `syncService.ts` (TODOs marked)
-- Real LLM calls for AI suggestions (currently mock data)
 - Mobile UI optimizations (marked as roadmap item)
-- Service role queries for insights (some parts need to pass `profileId` from auth context)
 
 ## File Reference Map
 - **Core Types:** `src/lib/types.ts`
 - **Supabase Setup:** `src/lib/supabaseClient.ts`
 - **Analytics:** `src/lib/analytics/pageRegistry.ts`, `src/lib/analytics/usePageAnalytics.ts`
+- **AI Services:** `src/lib/ai/llmService.ts` (full LLM), `src/lib/ai/mockSuggestions.ts` (legacy mock)
+- **AI Hook:** `src/lib/hooks/useAISuggestions.ts`
+- **AI Component:** `src/components/AI/AISuggestionsPanel.tsx`
+- **AI API:** `src/app/api/ai/suggestions/route.ts`
 - **OAuth + Integrations:** `src/lib/integrations/{trainingpeaks,outlook}.ts`
 - **Sync Logic:** `src/lib/services/syncService.ts`
 - **Calendar Hooks:** `src/lib/hooks/useCalendarState.ts`, `src/lib/hooks/useCalendarEvents.ts`

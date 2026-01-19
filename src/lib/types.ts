@@ -8,7 +8,16 @@ export interface Workout {
   end?: string // ISO
   notes?: string
   source?: string
+  metadata?: {
+    tss?: number // Training Stress Score
+    distance?: number // km
+    avgWatts?: number
+    maxWatts?: number
+    avgHr?: number
+    maxHr?: number
+  }
 }
+
 
 export interface Block {
   id: string

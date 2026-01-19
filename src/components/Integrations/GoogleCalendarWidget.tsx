@@ -13,6 +13,7 @@ export default function GoogleCalendarWidget({ weekStart, weekEnd, onSync }: Goo
   const [isConnected, setIsConnected] = useState(false)
   const [isSyncing, setSyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isConfigured, setIsConfigured] = useState(true)
 
   useEffect(() => {
     checkConnection()
@@ -23,6 +24,11 @@ export default function GoogleCalendarWidget({ weekStart, weekEnd, onSync }: Goo
       const connected = await isGoogleCalendarConnected()
       setIsConnected(connected)
     } catch (err) {
+      const message = err instanceof Error ? err.message : ''
+      // Silently fail if Google OAuth isn't configured
+      if (message.includes('client_id') || message.includes('Invalid')) {
+        setIsConfigured(false)
+      }
       console.error('Failed to check Google Calendar connection:', err)
     }
   }
@@ -50,6 +56,11 @@ export default function GoogleCalendarWidget({ weekStart, weekEnd, onSync }: Goo
     } finally {
       setSyncing(false)
     }
+  }
+
+  // Don't render if Google OAuth isn't configured
+  if (!isConfigured) {
+    return null
   }
 
   return (

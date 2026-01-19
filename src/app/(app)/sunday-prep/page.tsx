@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { usePageAnalytics } from '@/lib/analytics/usePageAnalytics'
-import { PageHeader, SleepSettingsModal } from '@/components'
+import { SleepSettingsModal, AISuggestionsPanel } from '@/components'
 import TaskEditModal, { TaskEditFormData } from '@/components/Modals/TaskEditModal'
-import GoogleCalendarWidget from '@/components/Integrations/GoogleCalendarWidget'
+import CSVImportModal from '@/components/Modals/CSVImportModal'
+import { useAISuggestions } from '@/lib/hooks/useAISuggestions'
+import { useTrainingPeaksSync } from '@/lib/hooks/useTrainingPeaksSync'
 import { supabase } from '@/lib/supabaseClient'
 import {
   loadWeekPlan,
@@ -17,6 +19,7 @@ import {
   type DayBlock,
   type WorkoutBlock
 } from '@/lib/services/sundayPrep'
+import type { Workout } from '@/lib/types'
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -34,6 +37,15 @@ export default function SundayPrep() {
   const [userSleepStart, setUserSleepStart] = useState(22)
   const [userSleepEnd, setUserSleepEnd] = useState(5)
   const [sleepSettingsOpen, setSleepSettingsOpen] = useState(false)
+  const [workouts, setWorkouts] = useState<Workout[]>([])
+  const [showAISuggestions, setShowAISuggestions] = useState(false)
+  const [showCSVImport, setShowCSVImport] = useState(false)
+
+  // AI suggestions hook
+  const { suggestions, loading: aiLoading, error: aiError, generateSuggestions } = useAISuggestions()
+  
+  // TrainingPeaks sync hook
+  const { loading: tpSyncing, error: tpError, lastSyncedAt, syncedCount, sync: syncTrainingPeaks } = useTrainingPeaksSync()
 
   // Helpers to compute adjacent weeks
   const getPreviousWeekStart = (d: Date) => new Date(d.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -65,22 +77,45 @@ export default function SundayPrep() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        
         const ws = getCurrentWeekStart()
         setWeekStart(ws)
 
-        if (user) {
-          const data = await loadWeekPlan(user.id, ws)
-          setWeekData(data)
-        } else {
-          // Initialize empty week for guests
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (!user) {
+          // Initialize empty week for guests immediately
           const emptyWeek: DayBlock[] = DAYS_OF_WEEK.map((day, i) => ({
             day,
             dayOfWeek: i + 1,
             tasks: []
           }))
           setWeekData(emptyWeek)
+          setLoading(false)
+          setHasHydrated(true)
+          return
+        }
+
+        // Load week plan and workouts in parallel for authenticated users
+        const weekEnd = new Date(ws)
+        weekEnd.setDate(weekEnd.getDate() + 7)
+
+        const [weekPlanData, workoutsResult] = await Promise.all([
+          loadWeekPlan(user.id, ws),
+          supabase
+            .from('workouts')
+            .select('*')
+            .eq('profile_id', user.id)
+            .gte('start', ws.toISOString())
+            .lt('start', weekEnd.toISOString())
+            .order('start', { ascending: true })
+        ])
+
+        setWeekData(weekPlanData)
+
+        if (workoutsResult.error) {
+          console.error('Error loading workouts:', workoutsResult.error)
+        } else if (workoutsResult.data) {
+          setWorkouts(workoutsResult.data)
         }
       } catch (err) {
         console.error('Failed to load week data:', err)
@@ -231,6 +266,133 @@ export default function SundayPrep() {
     }
   }
 
+  const handleGenerateAI = async () => {
+    const allBlocks = weekData.flatMap(day => day.tasks)
+    await generateSuggestions(workouts, allBlocks, weekStart)
+    setShowAISuggestions(true)
+  }
+
+  const handleSyncTrainingPeaks = async () => {
+    try {
+      await syncTrainingPeaks()
+      setError(null)
+      
+      // Reload workouts after sync
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekEnd.getDate() + 7)
+
+        const { data: workoutsData } = await supabase
+          .from('workouts')
+          .select('*')
+          .eq('profile_id', user.id)
+          .gte('start', weekStart.toISOString())
+          .lt('start', weekEnd.toISOString())
+          .order('start', { ascending: true })
+
+        if (workoutsData) {
+          setWorkouts(workoutsData)
+        }
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Sync failed'
+      setError(errorMsg)
+    }
+  }
+
+  const handleCSVImport = async (parsedWorkouts: Workout[]) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      if (parsedWorkouts.length === 0) {
+        throw new Error('No workouts found in CSV file')
+      }
+
+      // Transform workouts for database insertion (add profile_id and timestamps)
+      const dbWorkouts = parsedWorkouts.map((w) => ({
+        id: w.id,
+        profile_id: user.id,
+        title: w.title,
+        type: w.type,
+        start: w.start,
+        end: w.end,
+        notes: w.notes,
+        source: w.source || 'trainingpeaks',
+        metadata: w.metadata || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }))
+
+      // Insert workouts into Supabase
+      const { error } = await supabase
+        .from('workouts')
+        .upsert(dbWorkouts, {
+          onConflict: 'id',
+          ignoreDuplicates: false
+        })
+
+      if (error) throw error
+
+      // Reload workouts
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekEnd.getDate() + 7)
+
+      const { data: workoutsData } = await supabase
+        .from('workouts')
+        .select('*')
+        .eq('profile_id', user.id)
+        .gte('start', weekStart.toISOString())
+        .lt('start', weekEnd.toISOString())
+        .order('start', { ascending: true })
+
+      if (workoutsData) {
+        setWorkouts(workoutsData)
+      }
+
+      setShowCSVImport(false)
+      setError(null)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'CSV import failed'
+      setError(errorMsg)
+      throw err // Re-throw so modal can show error
+    }
+  }
+
+  const handleApplySuggestion = async (workoutId: string, start: string, end: string) => {
+    try {
+      const { error } = await supabase
+        .from('workouts')
+        .update({ start, end })
+        .eq('id', workoutId)
+
+      if (error) throw error
+
+      // Refresh workouts
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekEnd.getDate() + 7)
+
+        const { data: workoutsData } = await supabase
+          .from('workouts')
+          .select('*')
+          .eq('profile_id', user.id)
+          .gte('start', weekStart.toISOString())
+          .lt('start', weekEnd.toISOString())
+          .order('start', { ascending: true })
+
+        if (workoutsData) {
+          setWorkouts(workoutsData)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to apply suggestion:', err)
+      setError(`Failed to update workout: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+  }
+
   const handleDragStart = (dayIndex: number, taskId: string) => {
     setDraggedTask({ dayIndex, taskId })
   }
@@ -280,49 +442,77 @@ export default function SundayPrep() {
 
   return (
     <div className="min-h-screen pb-8">
-      {/* Teaser hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#00C2A833,transparent_45%),radial-gradient(circle_at_bottom_right,#FF7A0033,transparent_40%)]" aria-hidden />
-        <div className="relative max-w-6xl mx-auto px-4 md:px-8 py-10">
-          <div className="flex flex-col gap-3 max-w-3xl">
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs uppercase tracking-[0.2em] text-slate-300 w-max">Sunday Prep</span>
-            <h1 className="text-3xl md:text-4xl font-semibold text-white">Plan your week in 15 minutes</h1>
-            <p className="text-slate-200 max-w-2xl">Review commitments, slot workouts into real windows, and publish to your calendar. Start every week with clarity.</p>
-            <div className="flex gap-3 pt-1">
-              <a href="/signup" className="px-5 py-2.5 rounded-lg bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition">Start free</a>
-              <a href="/product" className="px-5 py-2.5 rounded-lg border border-white/20 text-white hover:bg-white/10 transition">See product</a>
+      {/* Page Header */}
+      <div className="px-4 md:px-8 py-6 border-b border-white/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Sunday Prep</h1>
+              <p className="text-slate-400 mt-1">Week of {formatWeekHeader(weekStart)}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => loadWeekForDate(getPreviousWeekStart(weekStart))}
+                className="px-3 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition font-medium text-sm"
+              >
+                ← Previous
+              </button>
+              <button
+                onClick={() => loadWeekForDate(getCurrentWeekStart())}
+                className="px-3 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition font-medium text-sm"
+              >
+                Today
+              </button>
+              <button
+                onClick={() => loadWeekForDate(getNextWeekStart(weekStart))}
+                className="px-3 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition font-medium text-sm"
+              >
+                Next →
+              </button>
             </div>
           </div>
         </div>
-      </section>
-      <PageHeader
-        dateDisplay={formatWeekHeader(weekStart)}
-        onTodayClick={() => loadWeekForDate(getCurrentWeekStart())}
-        onPreviousClick={() => loadWeekForDate(getPreviousWeekStart(weekStart))}
-        onNextClick={() => loadWeekForDate(getNextWeekStart(weekStart))}
-        onAddEvent={() => handleAddTask(0)}
-      />
+      </div>
 
       {/* Action Bar */}
-      <div className="px-4 md:px-8 py-6 flex items-center justify-between gap-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <GoogleCalendarWidget 
-            weekStart={weekStart} 
-            weekEnd={new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)} 
-          />
+      <div className="px-4 md:px-8 py-4 border-b border-white/10">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           {error && (
             <div className="text-red-400 text-sm flex items-center gap-2">
               <span>⚠</span> {error}
             </div>
           )}
-        </div>
-        <div className="flex items-center gap-3">
+          <div className="flex-1" />
+          <div className="flex items-center gap-3">
           <button
             onClick={() => setSleepSettingsOpen(true)}
             className="px-4 py-2.5 rounded-lg border border-white/20 text-white hover:bg-white/10 transition font-medium text-sm"
             title="Configure your sleep schedule"
           >
             ⚙️ Sleep Settings
+          </button>
+          <button
+            onClick={() => setShowCSVImport(true)}
+            className="px-4 py-2.5 rounded-lg border border-cadenceTeal/50 text-cadenceTeal hover:bg-cadenceTeal/10 transition font-medium text-sm"
+            title="Import workouts from TrainingPeaks CSV export"
+          >
+            📥 Import CSV
+          </button>
+          <button
+            onClick={handleSyncTrainingPeaks}
+            disabled={tpSyncing}
+            className="px-4 py-2.5 rounded-lg border border-cadenceTeal/50 text-cadenceTeal hover:bg-cadenceTeal/10 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium text-sm"
+            title={tpError ? tpError : 'Sync workouts from TrainingPeaks for next week'}
+          >
+            {tpSyncing ? '🔄 Syncing...' : `📊 Sync TP${syncedCount > 0 ? ` (${syncedCount})` : ''}`}
+          </button>
+          <button
+            onClick={handleGenerateAI}
+            disabled={aiLoading || workouts.length === 0}
+            className="px-4 py-2.5 rounded-lg border border-cadenceTeal/50 text-cadenceTeal hover:bg-cadenceTeal/10 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium text-sm"
+            title={workouts.length === 0 ? 'Add workouts to get AI suggestions' : 'Get AI-powered workout timing suggestions'}
+          >
+            {aiLoading ? '✨ Analyzing...' : '✨ AI Coach'}
           </button>
           <button
             onClick={handleSaveWeek}
@@ -332,11 +522,14 @@ export default function SundayPrep() {
             {saving ? 'Saving...' : 'Save Week'}
           </button>
         </div>
+        </div>
       </div>
 
       {/* Week Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-4 px-4 md:px-8 pt-6">
-        {weekData.map((dayBlock, dayIndex) => (
+      <div className="px-4 md:px-8 pt-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-4">
+            {weekData.map((dayBlock, dayIndex) => (
           <div
             key={dayBlock.day}
             className="flex flex-col min-h-[450px]"
@@ -350,12 +543,7 @@ export default function SundayPrep() {
 
             {/* Day Column */}
             <div className="bg-white/5 backdrop-blur border border-t-0 border-white/10 rounded-b-xl p-4 flex flex-col gap-3 flex-1">
-              {/* LUNCH tag */}
-              <div className="bg-white/10 py-1.5 px-2 rounded-lg flex items-center justify-center border border-white/10">
-                <p className="font-semibold text-[10px] text-slate-300 tracking-widest uppercase">Lunch</p>
-              </div>
-
-              {/* Tasks Container */}
+              {/* Events Container */}
               <div className="flex-1 space-y-2.5 overflow-y-auto">
                 {dayBlock.tasks.map(task => (
                   <div
@@ -382,21 +570,18 @@ export default function SundayPrep() {
                 ))}
               </div>
 
-              {/* Add Task Button */}
+              {/* Add Event Button */}
               <button
                 onClick={() => handleAddTask(dayIndex)}
                 className="w-full py-2.5 px-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-sm rounded-lg transition-colors border border-dashed border-white/20"
               >
-                + Add Task
+                + Add Event
               </button>
-
-              {/* BREAK tag */}
-              <div className="bg-white/10 py-1.5 px-2 rounded-lg flex items-center justify-center border border-white/10">
-                <p className="font-semibold text-[10px] text-slate-300 tracking-widest uppercase">Break</p>
-              </div>
             </div>
           </div>
         ))}
+          </div>
+        </div>
       </div>
 
       {/* Edit Modal */}
@@ -416,6 +601,112 @@ export default function SundayPrep() {
         />
       )}
 
+      {/* TrainingPeaks Workouts Panel */}
+      {workouts.length > 0 && (
+        <div className="px-4 md:px-8 py-8 border-t border-white/10">
+          <div className="max-w-6xl mx-auto space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">📊 TrainingPeaks Workouts</h2>
+              <span className="text-sm text-slate-400">{workouts.length} workouts</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {workouts.map((wo) => (
+                <div key={wo.id} className="bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cadenceTeal/50 transition">
+                  {/* Workout Title and Type Badge */}
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-white flex-1">{wo.title}</h3>
+                    <span className={`text-xs font-medium px-2 py-1 rounded whitespace-nowrap ${
+                      wo.type === 'swim' ? 'bg-blue-500/20 text-blue-300' :
+                      wo.type === 'bike' ? 'bg-yellow-500/20 text-yellow-300' :
+                      wo.type === 'run' ? 'bg-red-500/20 text-red-300' :
+                      'bg-slate-500/20 text-slate-300'
+                    }`}>
+                      {wo.type.charAt(0).toUpperCase() + wo.type.slice(1)}
+                    </span>
+                  </div>
+
+                  {/* Time */}
+                  <p className="text-sm text-slate-400 mt-2">
+                    {new Date(wo.start).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                    {wo.end && (
+                      <>
+                        {' - '}
+                        {new Date(wo.end).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </>
+                    )}
+                  </p>
+
+                  {/* Notes */}
+                  {wo.notes && (
+                    <p className="text-xs text-slate-400 mt-2 line-clamp-2">{wo.notes}</p>
+                  )}
+
+                  {/* Performance Metrics */}
+                  {wo.metadata && Object.values(wo.metadata).some(v => v !== undefined) && (
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {wo.metadata.tss !== undefined && (
+                          <div className="flex items-center gap-1 text-amber-400">
+                            <span>⚡</span>
+                            <span>{wo.metadata.tss} TSS</span>
+                          </div>
+                        )}
+                        {wo.metadata.distance !== undefined && (
+                          <div className="flex items-center gap-1 text-blue-400">
+                            <span>📏</span>
+                            <span>{wo.metadata.distance.toFixed(1)} km</span>
+                          </div>
+                        )}
+                        {wo.metadata.avgWatts !== undefined && (
+                          <div className="flex items-center gap-1 text-orange-400">
+                            <span>⚙️</span>
+                            <span>{wo.metadata.avgWatts}W avg</span>
+                          </div>
+                        )}
+                        {wo.metadata.maxWatts !== undefined && (
+                          <div className="flex items-center gap-1 text-red-400">
+                            <span>🔥</span>
+                            <span>{wo.metadata.maxWatts}W max</span>
+                          </div>
+                        )}
+                        {wo.metadata.avgHr !== undefined && (
+                          <div className="flex items-center gap-1 text-rose-400">
+                            <span>❤️</span>
+                            <span>{wo.metadata.avgHr} bpm avg</span>
+                          </div>
+                        )}
+                        {wo.metadata.maxHr !== undefined && (
+                          <div className="flex items-center gap-1 text-rose-500">
+                            <span>💓</span>
+                            <span>{wo.metadata.maxHr} bpm max</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Source Badge */}
+                  {wo.source === 'trainingpeaks' && (
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <span className="text-xs text-slate-500">📊 TrainingPeaks</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Sleep Settings Modal */}
       <SleepSettingsModal
         isOpen={sleepSettingsOpen}
@@ -427,6 +718,36 @@ export default function SundayPrep() {
           setUserSleepEnd(newEnd)
         }}
       />
+
+      {/* CSV Import Modal */}
+      <CSVImportModal
+        isOpen={showCSVImport}
+        onClose={() => setShowCSVImport(false)}
+        onImport={handleCSVImport}
+      />
+
+      {/* AI Suggestions Panel */}
+      {showAISuggestions && (
+        <div className="px-4 md:px-8 py-8 border-t border-white/10">
+          <div className="max-w-6xl mx-auto space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">✨ AI Coach Suggestions</h2>
+              <button
+                onClick={() => setShowAISuggestions(false)}
+                className="text-slate-400 hover:text-white transition"
+              >
+                ✕
+              </button>
+            </div>
+            <AISuggestionsPanel
+              suggestions={suggestions}
+              loading={aiLoading}
+              error={aiError}
+              onApplySuggestion={handleApplySuggestion}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

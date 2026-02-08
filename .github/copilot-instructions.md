@@ -43,7 +43,7 @@ EnduranceBloc is a Next.js-based smart weekly planning app for endurance athlete
 - Tailwind CSS for styling; use CSS variables from design tokens (primary: `#0D1D35`, accent orange: `#FF7A00`, teal: `#00C2A8`)
 - Sport-specific colors: Swim `#0077FF`, Bike `#F2C94C`, Run `#EB5757`
 - Support dark mode via `dark:` Tailwind prefix
-- Example (Button.tsx): `<button className="px-4 py-2 rounded bg-cadenceOrange text-white">` — keep className props flexible
+- Example (Button.tsx): `<button className="px-4 py-2 rounded bg-secondary text-white">` — keep className props flexible
 
 ### Key Pages
 - **`/`** (page.tsx): home/dashboard entry

@@ -6,6 +6,8 @@ export { EventModal } from './Modals/EventModal'
 export { SleepSettingsModal } from './Modals/SleepSettingsModal'
 export { default as GoogleCalendarWidget } from './Integrations/GoogleCalendarWidget'
 export { SundayPrepGrid } from './SundayPrepGrid/SundayPrepGrid'
+export { SundayPrepStepper } from './SundayPrep/SundayPrepStepper'
+export { LayeredBlocksGuide } from './SundayPrep/LayeredBlocksGuide'
 export { Logo } from './Logo/Logo'
 
 // Block Editor Components

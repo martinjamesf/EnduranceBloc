@@ -1,34 +1,35 @@
 import type { Workout } from '../types'
 
-interface CSVRow {
-  'Workout Date': string
-  'Workout Name': string
-  'Workout Type': string
-  'Planned Duration': string
-  'Planned Distance': string
-  'TSS': string
-  'Workout Description': string
-}
+type HeaderMatch = string[]
+
+const DATE_HEADERS: HeaderMatch = ['workout date', 'date', 'start date', 'start time', 'timestamp']
+const NAME_HEADERS: HeaderMatch = ['workout name', 'name', 'title', 'session', 'activity name']
+const TYPE_HEADERS: HeaderMatch = ['workout type', 'type', 'sport', 'activity type', 'activity']
+const DURATION_HEADERS: HeaderMatch = ['planned duration', 'duration', 'time', 'moving time']
+const DISTANCE_HEADERS: HeaderMatch = ['planned distance', 'distance', 'miles', 'km', 'kilometers']
+const TSS_HEADERS: HeaderMatch = ['tss', 'score', 'stress']
+const NOTES_HEADERS: HeaderMatch = ['workout description', 'description', 'notes']
 
 /**
- * Parse TrainingPeaks CSV export into Workout objects
- * Note: profile_id will be added during database insertion
+ * Parse a generic workout CSV (TrainingPeaks, Garmin, Strava export variants) into Workout objects.
+ * We look for flexible header names and fall back gracefully when optional columns are missing.
  */
-export function parseTrainingPeaksCSV(csvText: string): Workout[] {
+export function parseWorkoutCSV(csvText: string): Workout[] {
   const lines = csvText.trim().split(/\r?\n/)
   if (lines.length < 2) {
     throw new Error('CSV file is empty or invalid')
   }
 
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
+  // Support comma or semicolon separated exports; normalize to commas if a row has more semicolons
+  const firstLine = lines[0]
+  const delimiter = firstLine.split(';').length > firstLine.split(',').length ? ';' : ','
+  const headers = firstLine.split(delimiter).map((h) => h.trim().replace(/"/g, ''))
 
-  const hasDateHeader = headers.some(h => h === 'Workout Date' || h === 'Date')
-  const hasNameHeader = headers.some(h => h === 'Workout Name' || h === 'Name' || h === 'Title')
+  const hasDateHeader = headers.some((h) => DATE_HEADERS.includes(h.toLowerCase()))
+  const hasNameHeader = headers.some((h) => NAME_HEADERS.includes(h.toLowerCase()))
 
   if (!hasDateHeader || !hasNameHeader) {
-    throw new Error(
-      'File is not a TrainingPeaks workout CSV. Export using "CSV" (not the GZIP FIT export) and try again.'
-    )
+    throw new Error('CSV is missing required columns for date and name/title. Include a date and workout name column.')
   }
 
   const workouts: Workout[] = []
@@ -38,9 +39,9 @@ export function parseTrainingPeaksCSV(csvText: string): Workout[] {
     if (!line) continue
 
     try {
-      const values = parseCSVLine(line)
+      const values = parseCSVLine(line, delimiter)
       const row: Record<string, string> = {}
-      
+
       headers.forEach((header, index) => {
         row[header] = values[index]?.trim().replace(/"/g, '') || ''
       })
@@ -60,7 +61,7 @@ export function parseTrainingPeaksCSV(csvText: string): Workout[] {
 /**
  * Parse a single CSV line handling quoted values
  */
-function parseCSVLine(line: string): string[] {
+function parseCSVLine(line: string, delimiter: string): string[] {
   const values: string[] = []
   let currentValue = ''
   let inQuotes = false
@@ -70,7 +71,7 @@ function parseCSVLine(line: string): string[] {
 
     if (char === '"') {
       inQuotes = !inQuotes
-    } else if (char === ',' && !inQuotes) {
+    } else if (char === delimiter && !inQuotes) {
       values.push(currentValue)
       currentValue = ''
     } else {
@@ -86,10 +87,10 @@ function parseCSVLine(line: string): string[] {
  * Convert CSV row to Workout object
  */
 function parseWorkoutRow(row: Record<string, string>): Workout | null {
-  const workoutDate = row['Workout Date'] || row['Date']
-  const workoutName = row['Workout Name'] || row['Name'] || row['Title']
-  const workoutType = row['Workout Type'] || row['Type'] || row['Sport']
-  
+  const workoutDate = findFirst(row, DATE_HEADERS)
+  const workoutName = findFirst(row, NAME_HEADERS)
+  const workoutType = findFirst(row, TYPE_HEADERS)
+
   if (!workoutDate || !workoutName) {
     return null
   }
@@ -103,7 +104,7 @@ function parseWorkoutRow(row: Record<string, string>): Workout | null {
   const start = date.toISOString()
 
   let end: string | undefined
-  const durationStr = row['Planned Duration'] || row['Duration']
+  const durationStr = findFirst(row, DURATION_HEADERS)
   if (durationStr) {
     const durationMinutes = parseDuration(durationStr)
     if (durationMinutes > 0) {
@@ -115,25 +116,25 @@ function parseWorkoutRow(row: Record<string, string>): Workout | null {
   const type = mapWorkoutType(workoutType)
 
   const metadata: Workout['metadata'] = {}
-  
-  const tss = parseFloat(row['TSS'] || row['Planned TSS'] || '')
+
+  const tss = parseFloat(findFirst(row, TSS_HEADERS) || '')
   if (!isNaN(tss)) metadata.tss = tss
 
-  const distance = parseFloat(row['Planned Distance'] || row['Distance'] || '')
+  const distanceRaw = findFirst(row, DISTANCE_HEADERS)
+  const distance = parseDistance(distanceRaw)
   if (!isNaN(distance)) metadata.distance = distance
 
-  const avgPower = parseFloat(row['Avg Power'] || row['NP'] || '')
+  const avgPower = parseFloat(row['Avg Power'] || row['NP'] || row['Average Power'] || '')
   if (!isNaN(avgPower)) metadata.avgWatts = avgPower
 
-  // Return workout without profile_id - that will be added during database insertion
   return {
     id: `csv-import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: workoutName,
     type,
     start,
     end,
-    notes: row['Workout Description'] || row['Description'],
-    source: 'trainingpeaks',
+    notes: findFirst(row, NOTES_HEADERS) || undefined,
+    source: 'csv_import',
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined
   }
 }
@@ -158,17 +159,44 @@ function parseDuration(duration: string): number {
   return isNaN(minutes) ? 0 : minutes
 }
 
+function parseDistance(distance: string | undefined): number {
+  if (!distance) return NaN
+  const normalized = distance.toLowerCase().trim()
+  const match = normalized.match(/([0-9]+(?:\.[0-9]+)?)/)
+  if (!match) return NaN
+  const value = parseFloat(match[1])
+  if (normalized.includes('mi')) return value * 1.60934
+  return value
+}
+
 /**
  * Map workout type to enum
  */
 function mapWorkoutType(type: string): Workout['type'] {
-  const normalized = type.toLowerCase().trim()
-  
+  const normalized = (type || '').toLowerCase().trim()
+
   if (normalized.includes('swim')) return 'swim'
-  if (normalized.includes('bike') || normalized.includes('cycle')) return 'bike'
-  if (normalized.includes('run')) return 'run'
-  
+  if (normalized.includes('bike') || normalized.includes('cycle') || normalized.includes('ride')) return 'bike'
+  if (normalized.includes('run') || normalized.includes('jog')) return 'run'
+  if (normalized.includes('walk') || normalized.includes('hike')) return 'run'
+  if (normalized.includes('strength') || normalized.includes('gym')) return 'other'
+
   return 'other'
+}
+
+function findFirst(row: Record<string, string>, candidates: HeaderMatch): string | undefined {
+  const lowerKeys = Object.keys(row).reduce<Record<string, string>>((acc, key) => {
+    acc[key.toLowerCase()] = key
+    return acc
+  }, {})
+
+  for (const candidate of candidates) {
+    const key = lowerKeys[candidate]
+    if (key && row[key]) {
+      return row[key]
+    }
+  }
+  return undefined
 }
 
 /**

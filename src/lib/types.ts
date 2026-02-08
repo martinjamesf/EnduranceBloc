@@ -98,3 +98,47 @@ export interface BlockConflict {
   date: string
   reason: string
 }
+
+// Canonical Workout Schema (LLM-driven normalization target)
+export type WorkoutSource =
+  | 'trainingpeaks'
+  | 'strava'
+  | 'garmin'
+  | 'outlook'
+  | 'google_calendar'
+  | 'coach_text'
+  | 'manual'
+  | 'unknown'
+
+export interface IntensitySpec {
+  zone?: string // e.g., Z1-Z5
+  rpe?: number | null // 1-10 scale
+  if?: number | null // 0.0-1.5
+}
+
+export interface WorkoutStep {
+  // Minimal step representation; can be expanded later
+  kind: 'warmup' | 'interval' | 'cooldown' | 'rest' | 'free'
+  duration_min?: number | null
+  distance_km?: number | null
+  target?: IntensitySpec | null
+  notes?: string | null
+}
+
+export interface CanonicalWorkout {
+  source: WorkoutSource
+  type: TrainingType
+  subtype?: 'endurance' | 'tempo' | 'threshold' | 'skills' | 'recovery' | 'race' | 'interval' | 'easy' | 'long' | 'other'
+  duration_min?: number | null
+  distance_km?: number | null
+  intensity?: IntensitySpec
+  structured: boolean
+  steps: WorkoutStep[]
+  notes?: string
+  metadata: {
+    raw_payload: Record<string, unknown>
+    // Optional linkage to original row ids
+    raw_workout_id?: string
+    external_id?: string
+  }
+}

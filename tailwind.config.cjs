@@ -24,8 +24,8 @@ module.exports = {
         500: '#ef4444',
         600: '#dc2626'
       },
-      primaryNavy: '#0D1D35',
-      cadenceOrange: '#FF7A00',
+      primary: '#0D1D35',
+      secondary: '#FF7A00',
       aeroTeal: '#00C2A8',
       swim: '#0077FF',
       bike: '#F2C94C',

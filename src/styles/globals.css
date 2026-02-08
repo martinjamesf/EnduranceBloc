@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
+/* stylelint-disable at-rule-no-unknown */
 @theme {
-  --color-primaryNavy: #0D1D35;
-  --color-cadenceOrange: #FF7A00;
+  --color-primary: #0D1D35;
+  --color-secondary: #FF7A00;
+  --color-tiertiary: #3B76F6;
   --color-aeroTeal: #00C2A8;
   --color-swim: #0077FF;
   --color-bike: #F2C94C;
   --color-run: #EB5757;
 }
+/* stylelint-enable at-rule-no-unknown */
 
 html, body, #__next {
   height: 100%;

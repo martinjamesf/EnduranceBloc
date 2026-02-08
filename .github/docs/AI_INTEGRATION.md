@@ -134,7 +134,7 @@ export default function SundayPrep() {
           <button
             onClick={handleGenerateAI}
             disabled={loading || workouts.length === 0}
-            className="px-4 py-2 bg-cadenceOrange text-white font-medium rounded hover:bg-cadenceOrange/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-secondary text-white font-medium rounded hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Analyzing...' : 'Get AI Suggestions'}
           </button>

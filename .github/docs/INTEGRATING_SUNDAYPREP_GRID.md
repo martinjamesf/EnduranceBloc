@@ -1,346 +1,56 @@
-# Integrating Improved SundayPrepGrid into Sunday Prep Experience
+# Sunday Prep Grid Integration
 
-This guide explains how to integrate the redesigned `SundayPrepGrid` component into the full Sunday Prep page and other parts of the application.
+Use `SundayPrepGrid` as a display component for weekly blocks. It supports cross-midnight blocks and fixed (non-editable) blocks.
 
-## Component Overview
+## Block Data
 
-The `SundayPrepGrid` component has been redesigned with a focus on **accessibility, usability, and proper handling of complex time blocks**. 
-
-### Key Improvements ✅
-
-**1. Cross-Midnight Time Block Support**
-- Sleep blocks spanning from 10 PM to 6 AM (crossing midnight) now work correctly
-- Added `crossesMidnight` boolean flag to `BlockData` interface
-- UI displays "next day" label when a block crosses midnight
-- Example: `{ startTime: '22:00', endTime: '06:00', crossesMidnight: true }` → "10:00 PM – next day 6:00 AM"
-
-**2. Fixed vs. Editable Blocks**
-- Added `isFixed` boolean to mark non-customizable blocks (meals, breaks, sleep)
-- Visual differentiation: 70% opacity, dashed border, "Fixed" label
-- No hover effects or click handlers for fixed blocks
-- `role="status"` for screen readers (not button)
-
-**3. WCAG 2.1 Accessibility Compliance**
-- **Keyboard Navigation**: Tab through blocks, Enter/Space to activate
-- **Screen Reader Support**: Comprehensive ARIA labels with time, duration, status
-- **Focus Indicators**: Clear 2px focus ring
-- **Color Contrast**: All text meets 4.5:1 ratio minimum
-- **Semantic HTML**: Proper roles (`region`, `columnheader`, `button`, `status`)
-
-**4. Enhanced Visual Design**
-- **Category Icons**: ⚡ Workout, 💼 Work, 👥 Life, 🍽️ Meal, ☕ Break, 😴 Sleep, 📋 Prep
-- **Improved Colors**: Updated palette with better contrast ratios
-- **Time Format**: 12-hour AM/PM format for readability
-- **Duration Display**: Shows block length in hours for planning context
-
-**5. TypeScript Interface**
 ```typescript
 export interface BlockData {
   id: string
   title: string
-  category: BlockCategory // 'workout' | 'work' | 'life' | 'meal' | 'break' | 'sleep' | 'prep'
-  startTime: string // HH:MM (24-hour)
-  endTime: string // HH:MM (24-hour)
-  isFixed?: boolean // Non-editable blocks
-  crossesMidnight?: boolean // Time span crosses midnight
+  category: BlockCategory
+  startTime: string
+  endTime: string
+  isFixed?: boolean
+  crossesMidnight?: boolean
   description?: string
 }
 ```
 
-## Architecture Overview
+## Typical Usage
 
-```
-SundayPrepGrid (Display Component)
-    ↓
-    Used by:
-    - /sunday-prep (full experience)
-    - /product (teaser preview)
-    - /home (feature showcase)
-    - Custom integrations
-```
+# Sunday Prep Grid Integration
 
-## Integration Steps
+This doc explains how the Sunday Prep grid is wired and how to extend it.
 
-### Step 1: Import and Type Setup
+## Core Pieces
 
-```typescript
-// In your page or component
-import { SundayPrepGrid, BlockData } from '@/components'
-import { useState } from 'react'
+- `src/app/(app)/sunday-prep/page.tsx`: Entry point; uses `usePageAnalytics`.
+- `src/components/SundayPrep/SundayPrepStepper.tsx`: Step flow and UI.
+- `src/components/SundayPrepGrid/*`: Grid rendering and drag/drop hooks.
+- `src/lib/hooks/useCalendarState.ts`: Calendar state and view parameters.
+- `src/lib/hooks/useCalendarEvents.ts`: Load workouts and blocks.
 
-// Define your page component
-export default function SundayPrepPage() {
-  const [weekBlocks, setWeekBlocks] = useState<BlockData[]>([])
-  const [editingBlock, setEditingBlock] = useState<BlockData | null>(null)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+## Data Model
 
-  // ... rest of implementation
-}
-```
+- `Workout` and `Block` types in `src/lib/types.ts` (ISO timestamps).
+- Blocks can be `sleep`, `work`, `family`, `custom`.
 
-### Step 2: Fetch Data from Supabase
+## Adding a New Step
 
-```typescript
-import { supabase } from '@/lib/supabaseClient'
+1) Create a step component under `src/components/SundayPrep/`.
+2) Register it in `SundayPrepStepper.tsx` with title and description.
+3) Track step completion in local state.
 
-useEffect(() => {
-  const fetchWeekBlocks = async () => {
-    const { data, error } = await supabase
-      .from('blocks')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('start', weekStart)
-      .lte('start', weekEnd)
+## Analytics
 
-    if (error) {
-      console.error('Failed to fetch blocks:', error)
-      return
-    }
+- Add `sundayPrep` to `pageRegistry.ts` if new route.
+- Track milestone events (`sunday_prep_step_completed`).
 
-    // Transform Supabase blocks to BlockData format
-    const blocks = data.map(block => ({
-      id: block.id,
-      title: block.title,
-      category: block.category, // Should be BlockCategory type
-      startTime: block.start_time, // Should be HH:MM format
-      endTime: block.end_time, // Should be HH:MM format
-      isFixed: block.is_fixed || false,
-      crossesMidnight: block.crosses_midnight || false,
-      description: block.notes
-    }))
+## Common Pitfalls
 
-    setWeekBlocks(blocks)
-  }
-
-  fetchWeekBlocks()
-}, [userId, weekStart, weekEnd])
-```
-
-### Step 3: Organize Blocks by Day
-
-```typescript
-// Convert flat array of blocks to day columns
-function organizeBlocksByDay(blocks: BlockData[]): DayColumn[] {
-  const days = ['Fri', 'Sat', 'Sun']
-  const today = new Date()
-
-  return days.map((day, index) => {
-    const dayDate = new Date(today)
-    dayDate.setDate(dayDate.getDate() + index)
-
-    return {
-      day,
-      date: dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      blocks: blocks.filter(block => {
-        // Filter blocks for this specific day
-        const blockDate = new Date(block.startTime.split('T')[0])
-        return blockDate.toDateString() === dayDate.toDateString()
-      })
-    }
-  })
-}
-
-// In render:
-const dayColumns = organizeBlocksByDay(weekBlocks)
-```
-
-### Step 4: Handle Block Interactions
-
-```typescript
-// When user clicks "Add" to create new block
-const handleAddBlock = () => {
-  setEditingBlock(null)
-  setIsAddModalOpen(true)
-}
-
-// When user clicks existing block to edit
-const handleBlockClick = (block: BlockData) => {
-  setEditingBlock(block)
-  setIsAddModalOpen(true)
-}
-
-// Handle modal close
-const handleModalClose = () => {
-  setIsAddModalOpen(false)
-  setEditingBlock(null)
-}
-
-// Handle save
-const handleSaveBlock = async (blockData: BlockData) => {
-  if (editingBlock) {
-    // Update existing
-    const { error } = await supabase
-      .from('blocks')
-      .update(blockData)
-      .eq('id', editingBlock.id)
-
-    if (error) throw error
-  } else {
-    // Create new
-    const { error } = await supabase
-      .from('blocks')
-      .insert([blockData])
-
-    if (error) throw error
-  }
-
-  // Refetch blocks
-  await fetchWeekBlocks()
-  handleModalClose()
-}
-
-// Handle delete
-const handleDeleteBlock = async (blockId: string) => {
-  const { error } = await supabase
-    .from('blocks')
-    .delete()
-    .eq('id', blockId)
-
-  if (error) throw error
-
-  // Refetch blocks
-  await fetchWeekBlocks()
-  handleModalClose()
-}
-```
-
-### Step 5: Render Component
-
-```typescript
-return (
-  <div>
-    {/* Page header, navigation, etc. */}
-
-    {/* Grid */}
-    <SundayPrepGrid
-      compact={false}
-      showLabels={true}
-      sampleData={dayColumns}
-      onAddClick={handleAddBlock}
-      onBlockClick={handleBlockClick}
-      editable={true}
-    />
-
-    {/* Modal for editing/creating blocks */}
-    {isAddModalOpen && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-        <div className="bg-white rounded-lg p-6 max-w-md">
-          <h2 className="text-lg font-semibold mb-4">
-            {editingBlock ? 'Edit Block' : 'Create Block'}
-          </h2>
-
-          {/* Your block editor form here */}
-          {/* Include fields for:
-              - title (string)
-              - category (select: workout|work|life|meal|break|sleep|prep)
-              - startTime (time picker HH:MM)
-              - endTime (time picker HH:MM)
-              - crossesMidnight (checkbox)
-              - isFixed (checkbox, usually hidden)
-              - description (textarea)
-          */}
-
-          <div className="flex gap-2 mt-6">
-            <button onClick={handleModalClose}>Cancel</button>
-            <button onClick={() => handleSaveBlock(/* form data */)}>Save</button>
-            {editingBlock && (
-              <button onClick={() => handleDeleteBlock(editingBlock.id)}>Delete</button>
-            )}
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-)
-```
-
-## Database Schema Updates
-
-Update your Supabase `blocks` table to support the new fields:
-
-```sql
--- Add new columns to blocks table
-ALTER TABLE blocks
-ADD COLUMN starts_midnight BOOLEAN DEFAULT FALSE,
-ADD COLUMN crosses_midnight BOOLEAN DEFAULT FALSE,
-ADD COLUMN category VARCHAR(50) DEFAULT 'workout',
-ADD COLUMN is_fixed BOOLEAN DEFAULT FALSE,
-ADD COLUMN start_time VARCHAR(5), -- HH:MM format
-ADD COLUMN end_time VARCHAR(5);   -- HH:MM format
-
--- Create indexes for better query performance
-CREATE INDEX idx_blocks_user_start 
-ON blocks(user_id, start_time);
-
-CREATE INDEX idx_blocks_category 
-ON blocks(user_id, category);
-```
-
-## Component Integration Checklist
-
-- [ ] Import `SundayPrepGrid` and `BlockData` types
-- [ ] Set up state for weekly blocks and editing state
-- [ ] Fetch blocks from Supabase on component mount
-- [ ] Implement `organizeBlocksByDay()` function
-- [ ] Handle `onAddClick` callback
-- [ ] Handle `onBlockClick` callback with modal
-- [ ] Implement block save/delete logic in Supabase
-- [ ] Test keyboard navigation with Tab key
-- [ ] Test with screen reader (NVDA, JAWS, etc.)
-- [ ] Verify color contrast with WebAIM
-- [ ] Test on mobile and desktop
-- [ ] Verify cross-midnight sleep blocks display correctly
-- [ ] Confirm fixed blocks aren't editable
-
-## Example: Full Page Implementation
-
-```typescript
-'use client'
-
-import { useState, useEffect } from 'react'
-import { SundayPrepGrid, BlockData } from '@/components'
-import { supabase } from '@/lib/supabaseClient'
-import TaskEditModal from '@/components/Modals/TaskEditModal'
-
-interface DayColumn {
-  day: string
-  date: string
-  blocks: BlockData[]
-}
-
-export default function SundayPrepPage() {
-  const [weekBlocks, setWeekBlocks] = useState<BlockData[]>([])
-  const [editingBlock, setEditingBlock] = useState<BlockData | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-
-  // Get current user
-  useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUserId(data.user?.id || null)
-    }
-    getUser()
-  }, [])
-
-  // Fetch week blocks
-  useEffect(() => {
-    if (!userId) return
-
-    const fetchBlocks = async () => {
-      const weekStart = new Date()
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 5) // Friday
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekEnd.getDate() + 2) // Sunday
-
-      const { data, error } = await supabase
-        .from('blocks')
-        .select('*')
-        .eq('user_id', userId)
-        .gte('created_at', weekStart.toISOString())
-        .lte('created_at', weekEnd.toISOString())
-
-      if (!error && data) {
+- Ensure timezone conversions happen at the edges (server fetch, UI display).
+- Keep drag/drop optimistic updates to avoid flicker.
         const blocks: BlockData[] = data.map(b => ({
           id: b.id,
           title: b.title,

@@ -38,14 +38,12 @@ If you need server privileges (migrations, admin tasks) create a service key (Se
 
 > Note: Do not commit `.env.local` or your secrets to git. Use your cloud provider / GitHub Actions secrets for CI.
 
-## 4) Import database schema / run migrations
+## 4) Run migrations
 
-This repo includes `/supabase/schema.sql` (or `supabase/migrations`) with the DB schema to import.
+This repo uses Supabase migrations in `supabase/migrations` as the source of truth.
 
 Options:
-- Dashboard: Project → SQL Editor → Run SQL and paste the contents of `supabase/schema.sql` (quick and manual).
 - CLI: If you have the `supabase` CLI and are logged in, use `supabase db push` to push local migrations.
-- psql: Use `psql` with your `DATABASE_URL` to run the SQL file: `psql $DATABASE_URL -f ./supabase/schema.sql`
 
 The project already includes a `package.json` script:
 

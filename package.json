@@ -11,8 +11,8 @@
     "format": "prettier --write .",
     "supabase:migrate": "supabase db push",
     "supabase:start": "supabase start",
-    "import:schema": "psql \"$DATABASE_URL\" -f ./supabase/schema.sql || echo 'Install psql or run schema via Supabase SQL editor'",
-    "create:test-user": "node scripts/createTestUser.js"
+    "create:test-user": "node scripts/createTestUser.js",
+    "worker:translate": "node --env-file=.env.local scripts/translationWorker.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

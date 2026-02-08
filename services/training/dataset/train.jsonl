@@ -1,0 +1,2 @@
+{"source":"trainingpeaks","type":"run","subtype":"endurance","duration_min":60,"distance_km":10.2,"intensity":{"zone":"Z2","rpe":3,"if":0.68},"structured":false,"steps":[],"notes":"Easy aerobic run","metadata":{"raw_payload":{"title":"Easy run","duration":60,"distance":10.2}}}
+{"source":"strava","type":"bike","subtype":"tempo","duration_min":90,"distance_km":45.0,"intensity":{"zone":"Z3","rpe":6,"if":0.82},"structured":false,"steps":[],"notes":"Tempo ride","metadata":{"raw_payload":{"name":"Tempo ride","moving_time":5400,"distance":45000}}}

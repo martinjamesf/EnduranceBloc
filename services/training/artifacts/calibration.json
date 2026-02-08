@@ -1,0 +1,20 @@
+{
+  "type": {
+    "accuracy": 1.0,
+    "macro_f1": 0.25,
+    "confidence_threshold": 0.2715
+  },
+  "subtype": {
+    "accuracy": 0.0,
+    "macro_f1": 0.0,
+    "confidence_threshold": 0.6
+  },
+  "duration_min": {
+    "mae": 44.946,
+    "error_threshold": 89.8921
+  },
+  "distance_km": {
+    "mae": 1.8775,
+    "error_threshold": 3.755
+  }
+}

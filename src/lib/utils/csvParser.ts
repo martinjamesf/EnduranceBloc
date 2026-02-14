@@ -113,7 +113,7 @@ function parseWorkoutRow(row: Record<string, string>): Workout | null {
     }
   }
 
-  const type = mapWorkoutType(workoutType)
+  const type = mapWorkoutType(workoutType ?? '')
 
   const metadata: Workout['metadata'] = {}
 

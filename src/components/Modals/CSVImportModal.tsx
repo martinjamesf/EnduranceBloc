@@ -25,7 +25,7 @@ export default function CSVImportModal({
   const [importing, setImporting] = useState(false)
   const [useLLMNormalization, setUseLLMNormalization] = useState(true)
   const [importResults, setImportResults] = useState<
-    { name: string; status: 'pending' | 'success' | 'error'; message?: string }
+    { name: string; status: 'pending' | 'success' | 'error'; message?: string }[]
   >([])
   const [importSummary, setImportSummary] = useState<
     { total: number; succeeded: number; failed: number } | null
